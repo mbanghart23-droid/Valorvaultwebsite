@@ -1,4 +1,4 @@
-import { Shield, Users, Award, Search, Lock, Globe, CheckCircle, ArrowLeft, LogOut, AlertTriangle } from 'lucide-react';
+import { Shield, Users, Award, Search, Lock, Globe, CheckCircle, ArrowLeft, LogOut, AlertTriangle, Mail } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LandingPageProps {
@@ -21,9 +21,16 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
               <div className="flex items-center justify-center w-10 h-10 bg-black rounded-lg">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-black">Valor Vault</h1>
+              <h1 className="text-black">Valor Registry</h1>
             </div>
             <div className="flex items-center gap-3">
+              <a
+                href="mailto:help@valorregistry.com"
+                className="flex items-center gap-2 px-4 py-2 text-black hover:text-neutral-600 transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                <span className="hidden sm:inline">Have Questions?</span>
+              </a>
               <button
                 onClick={onSignIn || onBack}
                 className="px-6 py-2 text-black hover:text-neutral-600 transition-colors"
@@ -60,7 +67,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
               <div>
                 <h3 className="text-white mb-2">Data Security Notice</h3>
                 <p className="text-white/90 text-sm mb-2">
-                  Valor Vault is designed for cataloging military medal collections and historical documentation. 
+                  Valor Registry is designed for cataloging military medal collections and historical documentation. 
                   This platform is <strong>NOT intended</strong> for storing highly sensitive Personally Identifiable 
                   Information (PII), financial data, or information requiring GDPR/HIPAA compliance.
                 </p>
@@ -76,7 +83,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl mb-6">Preserve the Legacy of Courage</h1>
             <p className="text-xl text-white/80 mb-8">
-              Valor Vault is a secure platform for cataloging and preserving military medal collections, 
+              Valor Registry is a secure platform for cataloging and preserving military medal collections, 
               documenting the service members who earned them, and connecting with fellow collectors.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -188,7 +195,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-black mb-4">How Valor Vault Works</h2>
+            <h2 className="text-black mb-4">How Valor Registry Works</h2>
             <p className="text-neutral-600 max-w-2xl mx-auto">
               Getting started is simple. Here's how to begin cataloging your collection.
             </p>
@@ -245,7 +252,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             <div className="order-2 lg:order-1">
               <h2 className="text-black mb-6">Comprehensive Documentation</h2>
               <p className="text-neutral-600 mb-8">
-                Valor Vault allows you to maintain detailed records that go far beyond simple inventory. 
+                Valor Registry allows you to maintain detailed records that go far beyond simple inventory. 
                 Document the full story of each service member and their decorations.
               </p>
 
@@ -364,7 +371,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
                 <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-white">Valor Vault</h3>
+                <h3 className="text-white">Valor Registry</h3>
               </div>
               <p className="text-white/70 text-sm">
                 Preserving the legacy of courage through secure, detailed cataloging of military medals and the service members who earned them.
@@ -406,7 +413,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
           </div>
 
           <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/70 text-sm">
-            <p>© 2024 Valor Vault. Built for military medal collectors and historians.</p>
+            <p>© 2024 Valor Registry. Built for military medal collectors and historians.</p>
           </div>
         </div>
       </footer>

@@ -98,7 +98,7 @@ export function Dashboard({
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-black">Valor Vault</h1>
+                <h1 className="text-black">Valor Registry</h1>
                 <p className="text-neutral-600 text-sm">Welcome back, {userProfile.name}</p>
               </div>
             </div>
@@ -315,7 +315,7 @@ export function Dashboard({
               className="flex items-center gap-2 hover:text-black transition-colors"
             >
               <Info className="w-4 h-4" />
-              About Valor Vault
+              About Valor Registry
             </button>
             <button
               onClick={onViewContactSupport}
@@ -325,7 +325,7 @@ export function Dashboard({
               Contact Support
             </button>
             <span className="text-neutral-400">•</span>
-            <span>© 2024 Valor Vault</span>
+            <span>© 2024 Valor Registry</span>
           </div>
         </div>
       </footer>

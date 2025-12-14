@@ -14,6 +14,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [captchaQuestion, setCaptchaQuestion] = useState({ num1: 0, num2: 0, answer: 0 });
   const [honeypot, setHoneypot] = useState(''); // Spam trap
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     // Generate new CAPTCHA on mount
@@ -27,8 +28,25 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
     setCaptchaAnswer('');
   };
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/[A-Z]/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/[a-z]/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/[0-9]/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    return null;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError('');
 
     // Check honeypot (should be empty)
     if (honeypot !== '') {
@@ -43,8 +61,15 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       return;
     }
 
+    // Validate password complexity
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setPasswordError(validationError);
+      return;
+    }
+
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setPasswordError('Passwords do not match');
       return;
     }
     onRegister(name, email, password);
@@ -57,7 +82,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
           <div className="inline-flex items-center justify-center w-12 h-12 bg-black rounded-lg mb-4">
             <Shield className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-black mb-2">Valor Vault</h1>
+          <h1 className="text-black mb-2">Valor Registry</h1>
           <p className="text-neutral-600">Preserve the legacy of courage</p>
         </div>
 
@@ -119,6 +144,9 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
                 placeholder="••••••••"
                 required
               />
+              <p className="text-neutral-600 text-sm mt-2">
+                Must be at least 8 characters with uppercase, lowercase, and numbers
+              </p>
             </div>
 
             <div>
@@ -135,6 +163,12 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
                 required
               />
             </div>
+
+            {passwordError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {passwordError}
+              </div>
+            )}
 
             {/* CAPTCHA */}
             <div>

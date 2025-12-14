@@ -83,7 +83,7 @@ export function Login({ onLogin, onSwitchToRegister, onForgotPassword }: LoginPr
           <div className="inline-flex items-center justify-center w-12 h-12 bg-black rounded-lg mb-4">
             <Shield className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-black mb-2">Valor Vault</h1>
+          <h1 className="text-black mb-2">Valor Registry</h1>
           <p className="text-neutral-600">Preserve the legacy of courage</p>
         </div>
 
