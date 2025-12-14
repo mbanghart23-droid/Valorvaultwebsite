@@ -364,9 +364,39 @@ export default function App() {
     req => req.toUserId === currentUserId && req.status === 'pending'
   ).length;
 
+  // Show landing page for non-logged in users first
+  if (!isLoggedIn && currentView === 'landing-page') {
+    return (
+      <LandingPage
+        onBack={() => {}} // Not used when logged out
+        onLogout={() => {}} // Not used when logged out
+        onViewTermsOfService={() => setCurrentView('terms-of-service')}
+        onViewPrivacyPolicy={() => setCurrentView('privacy-policy')}
+        onGetStarted={() => setCurrentView('register')}
+        onSignIn={() => setCurrentView('login')}
+      />
+    );
+  }
+
   if (!isLoggedIn) {
     if (currentView === 'register') {
       return <Register onRegister={handleRegister} onSwitchToLogin={() => setCurrentView('login')} />;
+    }
+    if (currentView === 'terms-of-service') {
+      return (
+        <TermsOfService
+          onBack={() => setCurrentView('landing-page')}
+          onLogout={() => {}}
+        />
+      );
+    }
+    if (currentView === 'privacy-policy') {
+      return (
+        <PrivacyPolicy
+          onBack={() => setCurrentView('landing-page')}
+          onLogout={() => {}}
+        />
+      );
     }
     return <Login onLogin={handleLogin} onSwitchToRegister={() => setCurrentView('register')} />;
   }

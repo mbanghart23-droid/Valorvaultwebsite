@@ -6,9 +6,11 @@ interface LandingPageProps {
   onLogout: () => void;
   onViewTermsOfService?: () => void;
   onViewPrivacyPolicy?: () => void;
+  onGetStarted?: () => void;
+  onSignIn?: () => void;
 }
 
-export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPrivacyPolicy }: LandingPageProps) {
+export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPrivacyPolicy, onGetStarted, onSignIn }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -23,13 +25,13 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={onBack}
+                onClick={onSignIn || onBack}
                 className="px-6 py-2 text-black hover:text-neutral-600 transition-colors"
               >
                 Sign In
               </button>
               <button
-                onClick={onBack}
+                onClick={onGetStarted || onBack}
                 className="px-6 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
               >
                 Get Started
