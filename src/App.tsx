@@ -36,6 +36,8 @@ export interface PersonMedal {
   acquisitionSource?: string;
   estimatedValue?: string;
   serialNumber?: string;
+  isNamed?: boolean;
+  medalNumber?: string;
 }
 
 export interface Person {

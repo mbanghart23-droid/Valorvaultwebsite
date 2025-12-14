@@ -257,6 +257,19 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                                 <span className="text-black">{medal.serialNumber}</span>
                               </div>
                             )}
+                            {medal.medalNumber && (
+                              <div className="flex items-center gap-2">
+                                <Hash className="w-4 h-4 text-neutral-600" />
+                                <span className="text-neutral-600 text-sm">Medal #: </span>
+                                <span className="text-black">{medal.medalNumber}</span>
+                              </div>
+                            )}
+                            {medal.isNamed && (
+                              <div className="flex items-center gap-2">
+                                <Award className="w-4 h-4 text-amber-600" />
+                                <span className="text-amber-600">Named Medal</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

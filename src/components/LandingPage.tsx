@@ -1,4 +1,4 @@
-import { Shield, Users, Award, Search, Lock, Globe, CheckCircle, ArrowLeft, LogOut, AlertTriangle, Mail } from 'lucide-react';
+import { Shield, Award, Users, Search, ArrowRight, Mail, Check } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LandingPageProps {
@@ -13,27 +13,27 @@ interface LandingPageProps {
 export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPrivacyPolicy, onGetStarted, onSignIn }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-neutral-200 sticky top-0 bg-white z-10">
+      {/* Simple Header */}
+      <header className="border-b border-neutral-200 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-black rounded-lg">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-black">Valor Registry</h1>
+              <span className="text-black">Valor Registry</span>
             </div>
             <div className="flex items-center gap-3">
               <a
                 href="mailto:help@valorregistry.com"
-                className="flex items-center gap-2 px-4 py-2 text-black hover:text-neutral-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-neutral-600 hover:text-black transition-colors"
               >
                 <Mail className="w-4 h-4" />
                 <span className="hidden sm:inline">Have Questions?</span>
               </a>
               <button
                 onClick={onSignIn || onBack}
-                className="px-6 py-2 text-black hover:text-neutral-600 transition-colors"
+                className="px-5 py-2 text-black hover:text-neutral-600 transition-colors"
               >
                 Sign In
               </button>
@@ -48,54 +48,52 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-black text-white py-20 relative overflow-hidden">
-        {/* Hero Background Image */}
-        <div className="absolute inset-0 opacity-20">
-          <ImageWithFallback
-            src="https://images.unsplash.com/photo-1621255243199-6696f1883bdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaWxpdGFyeSUyMGhvbm9yJTIwbWVtb3JpYWx8ZW58MXx8fHwxNzY1NjcwMTM2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-            alt="Military memorial"
-            className="w-full h-full object-cover"
-          />
+      {/* Hero Section with Historical Imagery */}
+      <section className="relative bg-black text-white overflow-hidden">
+        {/* Background Image Grid */}
+        <div className="absolute inset-0 grid grid-cols-3 opacity-30">
+          <div className="relative overflow-hidden">
+            <ImageWithFallback
+              src="https://images.unsplash.com/photo-1667406593453-5bc911f8dd50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxCcml0aXNoJTIwbWlsaXRhcnklMjBtZWRhbHN8ZW58MXx8fHwxNzY1NzQ4MDExfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              alt="British Military Medals"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative overflow-hidden">
+            <ImageWithFallback
+              src="https://images.unsplash.com/photo-1754838769624-7674168e5292?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxDb21tb253ZWFsdGglMjB3YXIlMjBncmF2ZXN8ZW58MXx8fHwxNzY1NzQ4MDEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              alt="Commonwealth War Graves"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative overflow-hidden">
+            <ImageWithFallback
+              src="https://images.unsplash.com/photo-1621534864185-19a06671ed23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxBbWVyaWNhbiUyMHZldGVyYW4lMjBtZW1vcmlhbHxlbnwxfHx8fDE3NjU3NDgwMTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              alt="American Veteran Memorial"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Data Security Notice */}
-          <div className="bg-amber-600 text-white rounded-xl p-6 mb-8">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-6 h-6 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="text-white mb-2">Data Security Notice</h3>
-                <p className="text-white/90 text-sm mb-2">
-                  Valor Registry is designed for cataloging military medal collections and historical documentation. 
-                  This platform is <strong>NOT intended</strong> for storing highly sensitive Personally Identifiable 
-                  Information (PII), financial data, or information requiring GDPR/HIPAA compliance.
-                </p>
-                <p className="text-white/90 text-sm">
-                  <strong>Use responsibly:</strong> Document service history, medals, and collection details. Avoid 
-                  uploading sensitive personal documents, financial records, or illegal content. Any inappropriate 
-                  content will be reported to the appropriate authorities.
-                </p>
-              </div>
-            </div>
-          </div>
-
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl mb-6">Preserve the Legacy of Courage</h1>
-            <p className="text-xl text-white/80 mb-8">
-              Valor Registry is a secure platform for cataloging and preserving military medal collections, 
-              documenting the service members who earned them, and connecting with fellow collectors.
+            <h1 className="text-5xl md:text-6xl mb-6 leading-tight">
+              Preserve the Legacy<br />of Courage and Service
+            </h1>
+            <p className="text-xl text-white/90 mb-8 leading-relaxed">
+              A secure platform for cataloging military medal collections and honoring the service members who earned them.
             </p>
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={onGetStarted || onBack}
-                className="px-8 py-3 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-8 py-4 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors"
               >
-                Get Started
+                Start Your Collection
+                <ArrowRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onSignIn || onBack}
-                className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-black rounded-lg transition-colors"
+                className="px-8 py-4 border-2 border-white text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 Sign In
               </button>
@@ -104,287 +102,151 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Grid - Simple & Visual */}
       <section className="py-20 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-black mb-4">Everything You Need to Preserve History</h2>
-            <p className="text-neutral-600 max-w-2xl mx-auto">
-              Built specifically for military medal collectors, historians, and researchers who want to 
-              document service members and their decorations.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-white" />
+            <div className="bg-white border border-neutral-200 rounded-xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
+                <Award className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-black mb-3">Person-Focused Cataloging</h3>
-              <p className="text-neutral-600">
-                Document service members with detailed biographical information, service history, and 
-                complete medal records—both medals you own and those they were entitled to.
+              <h3 className="text-black mb-3">Document Every Medal</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                Track medals in your collection and those service members were entitled to. Include detailed provenance, condition, and historical context.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
-                <Award className="w-6 h-6 text-white" />
+            <div className="bg-white border border-neutral-200 rounded-xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
+                <Users className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-black mb-3">Complete Medal Tracking</h3>
-              <p className="text-neutral-600">
-                Track medals in your collection with condition reports, acquisition details, and estimated 
-                values. Also catalog entitled medals you're still searching for.
+              <h3 className="text-black mb-3">Person-Focused Records</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                Create comprehensive profiles for each service member, documenting their service history, biography, and complete medal records.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-white border border-neutral-200 rounded-xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-6">
                 <Search className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-black mb-3">Advanced Search</h3>
-              <p className="text-neutral-600">
-                Filter by country, era, branch, unit, and more. Search across your collection or 
-                explore discoverable collections from other verified collectors.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-black mb-3">Global Discovery</h3>
-              <p className="text-neutral-600">
-                Optionally make your collection discoverable to other verified collectors. Connect with 
-                researchers and enthusiasts who share your interests.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
-                <Lock className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-black mb-3">Privacy Controls</h3>
-              <p className="text-neutral-600">
-                Your collection is private by default. Control exactly what's visible and who can contact 
-                you. All contact requests require your approval.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-              <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-black mb-3">Admin Verified</h3>
-              <p className="text-neutral-600">
-                All new accounts require admin activation to maintain a trusted community. Spam protection 
-                on all forms keeps your experience clean and professional.
+              <h3 className="text-black mb-3">Re-Unite Broken Medal Groups</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                Connect with collectors worldwide to reunite separated medal groups. Search the global registry to find missing pieces and restore complete sets to their rightful place in history.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20">
+      {/* Historical Image Showcase */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-black mb-4">How Valor Registry Works</h2>
-            <p className="text-neutral-600 max-w-2xl mx-auto">
-              Getting started is simple. Here's how to begin cataloging your collection.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
-                1
-              </div>
-              <h4 className="text-black mb-2">Register</h4>
-              <p className="text-neutral-600 text-sm">
-                Create your account with spam-protected registration
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-neutral-700 mb-6 leading-relaxed">
+                Catalog medals and decorations spanning multiple conflicts and eras. Whether you collect from the Anglo-Boer War, the Great War, World War II, or beyond, Valor Registry provides the tools to document and preserve these important historical artifacts.
               </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
-                2
-              </div>
-              <h4 className="text-black mb-2">Wait for Activation</h4>
-              <p className="text-neutral-600 text-sm">
-                Admin reviews and activates your account (usually within 24-48 hours)
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
-                3
-              </div>
-              <h4 className="text-black mb-2">Add Service Members</h4>
-              <p className="text-neutral-600 text-sm">
-                Document the people behind the medals with full biographical details
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
-                4
-              </div>
-              <h4 className="text-black mb-2">Catalog Medals</h4>
-              <p className="text-neutral-600 text-sm">
-                Add medals you own and track those you're still searching for
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* What You Can Track */}
-      <section className="py-20 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="order-2 lg:order-1">
-              <h2 className="text-black mb-6">Comprehensive Documentation</h2>
-              <p className="text-neutral-600 mb-8">
-                Valor Registry allows you to maintain detailed records that go far beyond simple inventory. 
-                Document the full story of each service member and their decorations.
-              </p>
-
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-black mb-1">Service Member Details</h4>
-                    <p className="text-neutral-600 text-sm">
-                      Name, rank, service number, branch, unit, dates of service, biography, notes, and up to 2 images per record
-                    </p>
-                  </div>
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-neutral-700">Track named and unnamed medals with detailed attribution</p>
                 </div>
-
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-black mb-1">Medal Information</h4>
-                    <p className="text-neutral-600 text-sm">
-                      Medal name, category, date awarded, country, branch, era, and detailed descriptions
-                    </p>
-                  </div>
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-neutral-700">Connect with collectors to reunite separated medal groups</p>
                 </div>
-
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-black mb-1">Collection Management</h4>
-                    <p className="text-neutral-600 text-sm">
-                      Condition, acquisition details, source, estimated value, serial numbers, and notes
-                    </p>
-                  </div>
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-neutral-700">Upload historical photos and documentation</p>
                 </div>
-
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="text-black mb-1">Wishlist Tracking</h4>
-                    <p className="text-neutral-600 text-sm">
-                      Track medals the service member was entitled to that you don't yet have in your collection
-                    </p>
-                  </div>
+                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-neutral-700">Admin-approved community of verified collectors</p>
                 </div>
               </div>
             </div>
-
-            <div className="order-1 lg:order-2">
-              <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1613825787641-2dbbd4f96a1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaWxpdGFyeSUyMG1lZGFscyUyMGNvbGxlY3Rpb258ZW58MXx8fHwxNzY1NjcwMTM2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                  alt="Military medals collection"
-                  className="w-full h-[400px] object-cover"
-                />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="aspect-square rounded-lg overflow-hidden border border-neutral-200">
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1603738528212-a984bf8e81f4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZW1lbWJyYW5jZSUyMHBvcHB5JTIwbWVtb3JpYWx8ZW58MXx8fHwxNzY1NzQ4MDEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                    alt="Remembrance Poppy Memorial"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="aspect-[4/3] rounded-lg overflow-hidden border border-neutral-200">
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1720131749151-cf7d3d02a188?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaWxpdGFyeSUyMHNlcnZpY2UlMjByaWJib25zfGVufDF8fHx8MTc2NTc0ODAxMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                    alt="Military Service Ribbons"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4 pt-8">
+                <div className="aspect-[4/3] rounded-lg overflow-hidden border border-neutral-200">
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1667406593453-5bc911f8dd50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxCcml0aXNoJTIwbWlsaXRhcnklMjBtZWRhbHN8ZW58MXx8fHwxNzY1NzQ4MDExfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                    alt="British Military Medals"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="aspect-square rounded-lg overflow-hidden border border-neutral-200">
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1758204054877-fb1c7ba85ea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwdW5pZm9ybSUyMHBvcnRyYWl0fGVufDF8fHx8MTc2NTc0ODAxM3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                    alt="Vintage Uniform Portrait"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Privacy & Security */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-black mb-4">Privacy & Security First</h2>
-            <p className="text-neutral-600 max-w-2xl mx-auto">
-              Your collection and personal information are protected with multiple layers of security and privacy controls.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6">
-              <Lock className="w-8 h-8 text-black mb-3" />
-              <h4 className="text-black mb-2">Private by Default</h4>
-              <p className="text-neutral-600 text-sm">
-                Your collection is completely private unless you choose to make it discoverable. 
-                You control what information is visible to others.
-              </p>
-            </div>
-
-            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6">
-              <Shield className="w-8 h-8 text-black mb-3" />
-              <h4 className="text-black mb-2">Admin Moderation</h4>
-              <p className="text-neutral-600 text-sm">
-                All accounts are manually reviewed and activated by administrators to ensure a 
-                trusted, professional community of collectors and researchers.
-              </p>
-            </div>
-
-            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6">
-              <Users className="w-8 h-8 text-black mb-3" />
-              <h4 className="text-black mb-2">Controlled Contact</h4>
-              <p className="text-neutral-600 text-sm">
-                Other users can only contact you through approval-based requests. You decide 
-                whether to share your contact information with interested parties.
-              </p>
-            </div>
-
-            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-6">
-              <Globe className="w-8 h-8 text-black mb-3" />
-              <h4 className="text-black mb-2">Spam Protection</h4>
-              <p className="text-neutral-600 text-sm">
-                All forms include CAPTCHA and honeypot protection to keep spam and automated 
-                bots away from the community.
-              </p>
-            </div>
-          </div>
+      {/* Simple CTA Section */}
+      <section className="bg-black text-white py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-white mb-6">Ready to Start?</h2>
+          <p className="text-white/80 text-xl mb-8">
+            Create your account and begin cataloging your collection today. All new accounts are reviewed by administrators to maintain a trusted community.
+          </p>
+          <button
+            onClick={onGetStarted || onBack}
+            className="px-8 py-4 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors inline-flex items-center gap-2"
+          >
+            Create Free Account
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-black text-white py-12">
+      {/* Simple Footer */}
+      <footer className="bg-neutral-900 text-white/70 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg">
+                <div className="flex items-center justify-center w-10 h-10 bg-white/10 rounded-lg">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-white">Valor Registry</h3>
+                <span className="text-white">Valor Registry</span>
               </div>
-              <p className="text-white/70 text-sm">
-                Preserving the legacy of courage through secure, detailed cataloging of military medals and the service members who earned them.
+              <p className="text-white/60 text-sm">
+                Preserving the legacy of courage through secure, detailed cataloging of military medals.
               </p>
             </div>
 
             <div>
               <h4 className="text-white mb-4">Platform</h4>
-              <ul className="space-y-2 text-white/70 text-sm">
-                <li>• Person-focused cataloging</li>
-                <li>• Advanced search & filtering</li>
-                <li>• Global discovery network</li>
-                <li>• Admin verified accounts</li>
+              <ul className="space-y-2 text-sm">
+                <li>Person-focused cataloging</li>
+                <li>Advanced search & filtering</li>
+                <li>Global discovery network</li>
+                <li>Admin verified accounts</li>
               </ul>
             </div>
 
@@ -407,12 +269,12 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
                     Privacy Policy
                   </button>
                 </li>
-                <li className="text-white/70">Not for sensitive PII/financial data</li>
+                <li className="text-white/60">Not for sensitive PII/financial data</li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-white/20 mt-8 pt-8 text-center text-white/70 text-sm">
+          <div className="border-t border-white/10 pt-8 text-center text-sm">
             <p>© 2024 Valor Registry. Built for military medal collectors and historians.</p>
           </div>
         </div>
