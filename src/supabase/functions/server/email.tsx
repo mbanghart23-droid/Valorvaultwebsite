@@ -5,7 +5,12 @@ if (!RESEND_API_KEY) {
   console.error('⚠️ RESEND_API_KEY environment variable is not set. Email notifications will not work.');
   console.error('Please add RESEND_API_KEY to Supabase Edge Functions environment variables.');
 }
-const FROM_EMAIL = 'Valor Vault <onboarding@resend.dev>'; // Use resend.dev domain for testing
+
+// Email configuration
+// For testing: Use Resend's test domain (onboarding@resend.dev)
+// For production: Verify your own domain in Resend and update this to something like:
+// const FROM_EMAIL = 'Valor Vault <noreply@yourdomain.com>';
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Valor Vault <onboarding@resend.dev>';
 
 interface EmailOptions {
   to: string;
@@ -98,6 +103,60 @@ export function newRegistrationEmail(userProfile: any): string {
           
           <div class="footer">
             <p>This is an automated notification from Valor Vault</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Email template for registration confirmation to user
+ */
+export function registrationConfirmationEmail(userProfile: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #0f172a; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+        .info-box { background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #f59e0b; }
+        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">🎖️ Registration Received</h1>
+        </div>
+        <div class="content">
+          <p>Hi ${userProfile.name},</p>
+          
+          <p>Thank you for registering with Valor Vault! Your account has been created successfully.</p>
+          
+          <div class="info-box">
+            <h3 style="margin-top: 0; color: #f59e0b;">⏳ Next Steps</h3>
+            <p><strong>Your account is pending administrator approval.</strong></p>
+            <p>Our team manually reviews each registration to maintain a trusted community of collectors and historians. This typically takes 24-48 hours.</p>
+            <p>You will receive another email once your account has been activated, at which point you can log in and start using Valor Vault.</p>
+          </div>
+          
+          <p><strong>Account Details:</strong></p>
+          <ul>
+            <li>Email: ${userProfile.email}</li>
+            <li>Registration Date: ${new Date(userProfile.registeredAt).toLocaleDateString()}</li>
+          </ul>
+          
+          <p>If you did not create this account, please disregard this email.</p>
+          
+          <div class="footer">
+            <p>Thank you for your patience!</p>
+            <p>– The Valor Vault Team</p>
           </div>
         </div>
       </div>

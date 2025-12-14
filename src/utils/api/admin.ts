@@ -71,3 +71,17 @@ export async function deleteUser(userId: string, accessToken: string): Promise<b
     return false;
   }
 }
+
+export async function fetchDropdownStats(accessToken: string): Promise<Record<string, { value: string; usageCount: number }[]>> {
+  try {
+    const response = await apiCall('/admin/dropdown-stats', {}, accessToken);
+    if (!response.ok) {
+      throw new Error('Failed to fetch dropdown stats');
+    }
+    const data = await response.json();
+    return data.dropdownData || {};
+  } catch (error) {
+    console.error('Fetch dropdown stats error:', error);
+    return {};
+  }
+}

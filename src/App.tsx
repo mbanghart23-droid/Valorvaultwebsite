@@ -100,7 +100,7 @@ function AppContent() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: '',
     email: '',
-    isDiscoverable: true
+    isDiscoverable: false
   });
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -156,7 +156,9 @@ function AppContent() {
   const handleRegister = async (name: string, email: string, password: string) => {
     const result = await register(name, email, password);
     if (result.success) {
-      toast.success('Registration successful! Your account is pending activation by an administrator.');
+      toast.success('Registration successful! Please check your email for next steps. Your account will be activated by an administrator within 24-48 hours.', {
+        duration: 8000,
+      });
       setCurrentView('login');
     } else {
       toast.error(result.error || 'Registration failed');
@@ -407,6 +409,7 @@ function AppContent() {
     return (
       <Admin
         users={users}
+        accessToken={accessToken || ''}
         onActivateUser={handleActivateUser}
         onDeactivateUser={handleDeactivateUser}
         onDeleteUser={handleDeleteUser}

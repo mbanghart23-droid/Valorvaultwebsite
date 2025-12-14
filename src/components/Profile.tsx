@@ -20,10 +20,10 @@ export function Profile({ profile, onUpdate, onBack, onLogout }: ProfileProps) {
     });
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggleDiscoverable = () => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.checked
+      isDiscoverable: !formData.isDiscoverable
     });
   };
 
@@ -116,29 +116,7 @@ export function Profile({ profile, onUpdate, onBack, onLogout }: ProfileProps) {
                     <p className="text-neutral-600 text-sm mb-1">Email</p>
                     <p className="text-black">{profile.email || 'Not set'}</p>
                   </div>
-
-                  <div>
-                    <p className="text-neutral-600 text-sm mb-1">Collecting Since</p>
-                    <p className="text-black">{profile.collectorSince || 'Not set'}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-neutral-600 text-sm mb-1">Location</p>
-                    <p className="text-black">{profile.location || 'Not set'}</p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <p className="text-neutral-600 text-sm mb-1">Specialization</p>
-                    <p className="text-black">{profile.specialization || 'Not set'}</p>
-                  </div>
                 </div>
-
-                {profile.bio && (
-                  <div>
-                    <p className="text-neutral-600 text-sm mb-1">Bio</p>
-                    <p className="text-black">{profile.bio}</p>
-                  </div>
-                )}
 
                 <div className="pt-4">
                   <button
@@ -151,27 +129,40 @@ export function Profile({ profile, onUpdate, onBack, onLogout }: ProfileProps) {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Privacy Settings */}
+                {/* Privacy Settings with Toggle */}
                 <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Globe className="w-5 h-5 text-black" />
-                    <h3 className="text-black">Privacy Settings</h3>
-                  </div>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="isDiscoverable"
-                      checked={formData.isDiscoverable || false}
-                      onChange={handleCheckboxChange}
-                      className="w-5 h-5 mt-0.5 bg-white border-neutral-300 rounded text-black focus:ring-black focus:ring-offset-white"
-                    />
-                    <div>
-                      <p className="text-black mb-1">Make my collection discoverable</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Globe className="w-5 h-5 text-black" />
+                        <h3 className="text-black">Collection Discoverability</h3>
+                      </div>
                       <p className="text-neutral-600 text-sm">
-                        Allow other collectors to find your records in global search and send you contact requests.
+                        {formData.isDiscoverable 
+                          ? 'Your collection will be visible to other collectors in global search.'
+                          : 'Your collection will remain private and not visible in global search.'}
                       </p>
                     </div>
-                  </label>
+                    <button
+                      type="button"
+                      onClick={handleToggleDiscoverable}
+                      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                        formData.isDiscoverable ? 'bg-green-600' : 'bg-neutral-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                          formData.isDiscoverable ? 'translate-x-7' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {formData.isDiscoverable && (
+                    <p className="text-amber-600 text-sm mt-3 flex items-start gap-2">
+                      <span>⚠️</span>
+                      <span>Other collectors will be able to see your records and send you contact requests.</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -204,66 +195,6 @@ export function Profile({ profile, onUpdate, onBack, onLogout }: ProfileProps) {
                       required
                     />
                   </div>
-
-                  <div>
-                    <label htmlFor="collectorSince" className="block text-neutral-700 mb-2">
-                      Collecting Since (Year)
-                    </label>
-                    <input
-                      id="collectorSince"
-                      name="collectorSince"
-                      type="text"
-                      value={formData.collectorSince}
-                      onChange={handleChange}
-                      placeholder="e.g., 2015"
-                      className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="location" className="block text-neutral-700 mb-2">
-                      Location
-                    </label>
-                    <input
-                      id="location"
-                      name="location"
-                      type="text"
-                      value={formData.location}
-                      onChange={handleChange}
-                      placeholder="e.g., Washington, D.C."
-                      className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label htmlFor="specialization" className="block text-neutral-700 mb-2">
-                      Specialization
-                    </label>
-                    <input
-                      id="specialization"
-                      name="specialization"
-                      type="text"
-                      value={formData.specialization}
-                      onChange={handleChange}
-                      placeholder="e.g., WWII Allied Decorations"
-                      className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="bio" className="block text-neutral-700 mb-2">
-                    Bio
-                  </label>
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleChange}
-                    rows={4}
-                    className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    placeholder="Tell us about your collecting interests and experience..."
-                  />
                 </div>
 
                 <div className="flex gap-4 pt-4">

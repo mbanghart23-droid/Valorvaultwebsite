@@ -16,7 +16,7 @@ const MAX_IMAGES = 2;
 const existingBranches = ['Army', 'Navy', 'Air Force', 'Marines', 'Coast Guard', 'U.S. Army', 'USAF'];
 const existingCountries = ['United States', 'United Kingdom', 'Germany', 'France', 'Canada', 'USA', 'Australia'];
 const existingEras = ['World War II', 'Vietnam War', 'Korean War', 'Iraq War', 'Afghanistan War', 'WW2', 'WWII', 'Gulf War', 'Cold War'];
-const existingCategories = ['Combat Decoration', 'Valor Decoration', 'Service Medal', 'Campaign Medal', 'Commemorative Medal'];
+const existingCategories = ['Combat Decoration', 'Valor Decoration', 'Service Medal', 'Campaign Medal', 'Commemorative Medal', 'Other'];
 
 export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
   const [formData, setFormData] = useState({

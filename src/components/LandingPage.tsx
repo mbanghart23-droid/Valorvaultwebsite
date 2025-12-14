@@ -53,20 +53,21 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Important Disclaimer Banner */}
+          {/* Data Security Notice */}
           <div className="bg-amber-600 text-white rounded-xl p-6 mb-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-6 h-6 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="text-white mb-2">Important Demonstration Notice</h3>
+                <h3 className="text-white mb-2">Data Security Notice</h3>
                 <p className="text-white/90 text-sm mb-2">
-                  This is a mockup application created for developer quotes and planning purposes. It demonstrates 
-                  the intended functionality of Valor Vault but is not a production system.
+                  Valor Vault is designed for cataloging military medal collections and historical documentation. 
+                  This platform is <strong>NOT intended</strong> for storing highly sensitive Personally Identifiable 
+                  Information (PII), financial data, or information requiring GDPR/HIPAA compliance.
                 </p>
                 <p className="text-white/90 text-sm">
-                  <strong>Data Security Notice:</strong> Valor Vault is designed for cataloging military medal collections 
-                  and is NOT intended for storing highly sensitive Personally Identifiable Information (PII), financial data, 
-                  or information requiring GDPR/HIPAA compliance. Use responsibly.
+                  <strong>Use responsibly:</strong> Document service history, medals, and collection details. Avoid 
+                  uploading sensitive personal documents, financial records, or illegal content. Any inappropriate 
+                  content will be reported to the appropriate authorities.
                 </p>
               </div>
             </div>
@@ -74,17 +75,24 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
 
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl mb-6">Preserve the Legacy of Courage</h1>
-            <p className="text-xl text-white/80 mb-6">
+            <p className="text-xl text-white/80 mb-8">
               Valor Vault is a secure platform for cataloging and preserving military medal collections, 
               documenting the service members who earned them, and connecting with fellow collectors.
             </p>
-            <p className="text-lg text-white/90 mb-2">
-              <strong>Important:</strong> Do not upload sensitive, illegal, or personally identifiable information. 
-              This platform is designed for historical cataloging purposes only.
-            </p>
-            <p className="text-sm text-white/80">
-              Any inappropriate content will be reported to the appropriate authorities.
-            </p>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={onGetStarted || onBack}
+                className="px-8 py-3 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors"
+              >
+                Get Started
+              </button>
+              <button
+                onClick={onSignIn || onBack}
+                className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-black rounded-lg transition-colors"
+              >
+                Sign In
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -374,12 +382,25 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             </div>
 
             <div>
-              <h4 className="text-white mb-4">Important Notes</h4>
-              <ul className="space-y-2 text-white/70 text-sm">
-                <li>• Not for PII or sensitive data</li>
-                <li>• Mockup for developer quotes</li>
-                <li>• All features are demonstrations</li>
-                <li>• Contact admin for questions</li>
+              <h4 className="text-white mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <button
+                    onClick={onViewTermsOfService}
+                    className="text-white/70 hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={onViewPrivacyPolicy}
+                    className="text-white/70 hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </button>
+                </li>
+                <li className="text-white/70">Not for sensitive PII/financial data</li>
               </ul>
             </div>
           </div>

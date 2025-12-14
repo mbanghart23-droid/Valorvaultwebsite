@@ -1,9 +1,11 @@
 import { User } from '../App';
 import { ArrowLeft, LogOut, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Database, Edit2, GitMerge } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchDropdownStats } from '../utils/api/admin';
 
 interface AdminProps {
   users: User[];
+  accessToken: string;
   onActivateUser: (userId: string) => void;
   onDeactivateUser: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
@@ -12,7 +14,8 @@ interface AdminProps {
 }
 
 export function Admin({ 
-  users, 
+  users,
+  accessToken,
   onActivateUser, 
   onDeactivateUser, 
   onDeleteUser, 
@@ -24,46 +27,25 @@ export function Admin({
   const [newValueName, setNewValueName] = useState<string>('');
   const [mergingValue, setMergingValue] = useState<string | null>(null);
   const [mergeTargetValue, setMergeTargetValue] = useState<string>('');
-  
-  // Mock data - in production, this would come from database
-  const dropdownData: Record<string, { value: string; usageCount: number }[]> = {
-    era: [
-      { value: 'World War II', usageCount: 45 },
-      { value: 'Vietnam War', usageCount: 32 },
-      { value: 'Korean War', usageCount: 28 },
-      { value: 'Iraq War', usageCount: 18 },
-      { value: 'Afghanistan War', usageCount: 15 },
-      { value: 'WW2', usageCount: 8 }, // Duplicate example
-      { value: 'WWII', usageCount: 5 }, // Duplicate example
-      { value: 'Gulf War', usageCount: 12 },
-      { value: 'Cold War', usageCount: 9 }
-    ],
-    branch: [
-      { value: 'Army', usageCount: 67 },
-      { value: 'Navy', usageCount: 45 },
-      { value: 'Air Force', usageCount: 38 },
-      { value: 'Marines', usageCount: 34 },
-      { value: 'Coast Guard', usageCount: 12 },
-      { value: 'U.S. Army', usageCount: 7 }, // Duplicate example
-      { value: 'USAF', usageCount: 4 } // Duplicate example
-    ],
-    country: [
-      { value: 'United States', usageCount: 156 },
-      { value: 'United Kingdom', usageCount: 34 },
-      { value: 'Germany', usageCount: 28 },
-      { value: 'France', usageCount: 22 },
-      { value: 'Canada', usageCount: 18 },
-      { value: 'USA', usageCount: 12 }, // Duplicate example
-      { value: 'Australia', usageCount: 15 }
-    ],
-    category: [
-      { value: 'Combat Decoration', usageCount: 78 },
-      { value: 'Valor Decoration', usageCount: 56 },
-      { value: 'Service Medal', usageCount: 89 },
-      { value: 'Campaign Medal', usageCount: 67 },
-      { value: 'Commemorative Medal', usageCount: 34 }
-    ]
-  };
+  const [dropdownData, setDropdownData] = useState<Record<string, { value: string; usageCount: number }[]>>({
+    era: [],
+    branch: [],
+    country: [],
+    category: []
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  // Load real dropdown statistics from the database
+  useEffect(() => {
+    const loadDropdownStats = async () => {
+      setIsLoadingStats(true);
+      const stats = await fetchDropdownStats(accessToken);
+      setDropdownData(stats);
+      setIsLoadingStats(false);
+    };
+    
+    loadDropdownStats();
+  }, [accessToken]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -268,131 +250,146 @@ export function Admin({
                 </div>
               </div>
 
-              {dropdownData[selectedField]
-                .sort((a, b) => b.usageCount - a.usageCount)
-                .map((item, index) => (
-                <div key={index} className="flex items-center justify-between px-4 py-3 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                  {editingValue === item.value ? (
-                    <>
-                      <input
-                        type="text"
-                        value={newValueName}
-                        onChange={(e) => setNewValueName(e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-white border border-neutral-300 rounded text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-                        placeholder="New value name"
-                      />
-                      <div className="flex items-center gap-2 ml-3">
-                        <button
-                          onClick={() => {
-                            // Mock save action
-                            alert(`Renamed "${item.value}" to "${newValueName}" across ${item.usageCount} records`);
-                            setEditingValue(null);
-                            setNewValueName('');
-                          }}
-                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingValue(null);
-                            setNewValueName('');
-                          }}
-                          className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded text-sm transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </>
-                  ) : mergingValue === item.value ? (
-                    <>
-                      <div className="flex-1 flex items-center gap-2">
-                        <span className="text-black">{item.value}</span>
-                        <span className="text-neutral-400">→</span>
-                        <select
-                          value={mergeTargetValue}
-                          onChange={(e) => setMergeTargetValue(e.target.value)}
-                          className="px-3 py-1.5 bg-white border border-neutral-300 rounded text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black text-sm"
-                        >
-                          <option value="">Select target value...</option>
-                          {dropdownData[selectedField]
-                            .filter(v => v.value !== item.value)
-                            .map((v, i) => (
-                              <option key={i} value={v.value}>{v.value}</option>
-                            ))
-                          }
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-2 ml-3">
-                        <button
-                          onClick={() => {
-                            if (mergeTargetValue) {
-                              alert(`Merged "${item.value}" (${item.usageCount} records) into "${mergeTargetValue}"`);
-                              setMergingValue(null);
-                              setMergeTargetValue('');
-                            }
-                          }}
-                          disabled={!mergeTargetValue}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Merge
-                        </button>
-                        <button
-                          onClick={() => {
-                            setMergingValue(null);
-                            setMergeTargetValue('');
-                          }}
-                          className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded text-sm transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <span className="flex-1 text-black">{item.value}</span>
-                      <div className="flex items-center gap-4">
-                        <span className="text-neutral-600 text-sm w-[80px] text-right">
-                          {item.usageCount} records
-                        </span>
-                        <div className="flex items-center gap-2 w-[140px]">
+              {isLoadingStats ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-neutral-600 text-sm">Loading dropdown statistics...</p>
+                  </div>
+                </div>
+              ) : dropdownData[selectedField] && dropdownData[selectedField].length > 0 ? (
+                dropdownData[selectedField]
+                  .sort((a, b) => b.usageCount - a.usageCount)
+                  .map((item, index) => (
+                  <div key={index} className="flex items-center justify-between px-4 py-3 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
+                    {editingValue === item.value ? (
+                      <>
+                        <input
+                          type="text"
+                          value={newValueName}
+                          onChange={(e) => setNewValueName(e.target.value)}
+                          className="flex-1 px-3 py-1.5 bg-white border border-neutral-300 rounded text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+                          placeholder="New value name"
+                        />
+                        <div className="flex items-center gap-2 ml-3">
                           <button
                             onClick={() => {
-                              setEditingValue(item.value);
-                              setNewValueName(item.value);
+                              // Mock save action
+                              alert(`Renamed "${item.value}" to "${newValueName}" across ${item.usageCount} records`);
+                              setEditingValue(null);
+                              setNewValueName('');
                             }}
-                            className="p-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded transition-colors"
-                            title="Rename"
+                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            Save
                           </button>
                           <button
                             onClick={() => {
-                              setMergingValue(item.value);
-                              setMergeTargetValue('');
+                              setEditingValue(null);
+                              setNewValueName('');
                             }}
-                            className="p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
-                            title="Merge with another value"
+                            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded text-sm transition-colors"
                           >
-                            <GitMerge className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Delete "${item.value}"? This will affect ${item.usageCount} records.`)) {
-                                alert(`Deleted "${item.value}" from ${item.usageCount} records`);
-                              }
-                            }}
-                            className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
+                            Cancel
                           </button>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    ) : mergingValue === item.value ? (
+                      <>
+                        <div className="flex-1 flex items-center gap-2">
+                          <span className="text-black">{item.value}</span>
+                          <span className="text-neutral-400">→</span>
+                          <select
+                            value={mergeTargetValue}
+                            onChange={(e) => setMergeTargetValue(e.target.value)}
+                            className="px-3 py-1.5 bg-white border border-neutral-300 rounded text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black text-sm"
+                          >
+                            <option value="">Select target value...</option>
+                            {dropdownData[selectedField]
+                              .filter(v => v.value !== item.value)
+                              .map((v, i) => (
+                                <option key={i} value={v.value}>{v.value}</option>
+                              ))
+                            }
+                          </select>
+                        </div>
+                        <div className="flex items-center gap-2 ml-3">
+                          <button
+                            onClick={() => {
+                              if (mergeTargetValue) {
+                                alert(`Merged "${item.value}" (${item.usageCount} records) into "${mergeTargetValue}"`);
+                                setMergingValue(null);
+                                setMergeTargetValue('');
+                              }
+                            }}
+                            disabled={!mergeTargetValue}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Merge
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMergingValue(null);
+                              setMergeTargetValue('');
+                            }}
+                            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded text-sm transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-black">{item.value}</span>
+                        <div className="flex items-center gap-4">
+                          <span className="text-neutral-600 text-sm w-[80px] text-right">
+                            {item.usageCount} records
+                          </span>
+                          <div className="flex items-center gap-2 w-[140px]">
+                            <button
+                              onClick={() => {
+                                setEditingValue(item.value);
+                                setNewValueName(item.value);
+                              }}
+                              className="p-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded transition-colors"
+                              title="Rename"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMergingValue(item.value);
+                                setMergeTargetValue('');
+                              }}
+                              className="p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
+                              title="Merge with another value"
+                            >
+                              <GitMerge className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete "${item.value}"? This will affect ${item.usageCount} records.`)) {
+                                  alert(`Deleted "${item.value}" from ${item.usageCount} records`);
+                                }
+                              }}
+                              className="p-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <p className="text-neutral-600 text-sm">No values found for this field.</p>
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Info Box */}

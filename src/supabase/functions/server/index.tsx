@@ -6,7 +6,8 @@ import { supabaseAdmin, verifyToken } from "./auth.tsx";
 import { initializeStorage, uploadImage, getSignedUrl, deleteImage } from "./storage.tsx";
 import { 
   sendEmail, 
-  newRegistrationEmail, 
+  newRegistrationEmail,
+  registrationConfirmationEmail,
   accountActivatedEmail,
   contactRequestEmail,
   requestApprovedEmail,
@@ -116,11 +117,19 @@ app.post("/make-server-8db4ea83/auth/register", async (c) => {
         location: '',
         bio: '',
         specialization: '',
-        isDiscoverable: true
+        isDiscoverable: false
       }
     };
     
     await kv.set(`user:${authData.user.id}`, userProfile);
+    
+    // Send confirmation email to the new user
+    await sendEmail({
+      to: email,
+      subject: 'Welcome to Valor Vault - Registration Received',
+      html: registrationConfirmationEmail(userProfile)
+    });
+    console.log(`Sent registration confirmation email to ${email}`);
     
     // Send email to all admin users
     const adminEmails = await getAdminEmails(kv);
@@ -966,6 +975,69 @@ app.delete("/make-server-8db4ea83/admin/users/:id", async (c) => {
   } catch (error) {
     console.log('Delete user error:', error);
     return c.json({ error: 'Failed to delete user' }, 500);
+  }
+});
+
+// Get dropdown field statistics (admin only)
+app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    // Get all persons from all users
+    const allPersons = await kv.getByPrefix('person:');
+    
+    // Initialize counters for each field
+    const stats: Record<string, Record<string, number>> = {
+      era: {},
+      branch: {},
+      country: {},
+      category: {}
+    };
+    
+    // Count occurrences of each value
+    for (const person of allPersons) {
+      // Count person-level fields
+      if (person.era) {
+        stats.era[person.era] = (stats.era[person.era] || 0) + 1;
+      }
+      if (person.branch) {
+        stats.branch[person.branch] = (stats.branch[person.branch] || 0) + 1;
+      }
+      if (person.country) {
+        stats.country[person.country] = (stats.country[person.country] || 0) + 1;
+      }
+      
+      // Count medal-level categories
+      if (person.medals && Array.isArray(person.medals)) {
+        for (const medal of person.medals) {
+          if (medal.category) {
+            stats.category[medal.category] = (stats.category[medal.category] || 0) + 1;
+          }
+        }
+      }
+    }
+    
+    // Convert to array format for frontend
+    const dropdownData: Record<string, { value: string; usageCount: number }[]> = {};
+    for (const [field, values] of Object.entries(stats)) {
+      dropdownData[field] = Object.entries(values)
+        .map(([value, usageCount]) => ({ value, usageCount }))
+        .sort((a, b) => b.usageCount - a.usageCount); // Sort by usage count descending
+    }
+    
+    return c.json({ dropdownData });
+  } catch (error) {
+    console.log('Get dropdown stats error:', error);
+    return c.json({ error: 'Failed to get dropdown stats' }, 500);
   }
 });
 
