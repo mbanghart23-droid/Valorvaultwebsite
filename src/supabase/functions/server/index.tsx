@@ -77,7 +77,7 @@ app.get("/make-server-8db4ea83/health", (c) => {
 // Register new user (requires admin approval)
 app.post("/make-server-8db4ea83/auth/register", async (c) => {
   try {
-    const { name, email, password } = await c.req.json();
+    const { name, email, password, membershipTier } = await c.req.json();
     
     if (!name || !email || !password) {
       return c.json({ error: 'Missing required fields' }, 400);
@@ -112,6 +112,7 @@ app.post("/make-server-8db4ea83/auth/register", async (c) => {
       isActive: false, // Requires admin activation
       isAdmin: false,
       registeredAt: new Date().toISOString(),
+      membershipTier: membershipTier || 'beta-user',
       profile: {
         collectorSince: '',
         location: '',

@@ -48,54 +48,69 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
         <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
           {/* Header */}
           <div className="bg-black p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-white mb-2">{person.name}</h1>
-                {person.rank && (
-                  <p className="text-white/80 mb-3">{person.rank}, {person.branch}</p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                    {person.country}
-                  </span>
-                  <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                    {person.era}
-                  </span>
+            <div className="flex items-start gap-6">
+              {person.profileImage ? (
+                <img
+                  src={person.profileImage}
+                  alt={person.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center border-4 border-white/20">
+                  <User className="w-12 h-12 text-white/60" />
                 </div>
-                {!isOwnPerson && person.ownerName && (
-                  <div className="flex items-center gap-2 text-white/90 mt-3">
-                    <User className="w-4 h-4" />
-                    <span>Collection Owner: {person.ownerName}</span>
+              )}
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h1 className="text-white mb-2">{person.name}</h1>
+                    {person.rank && (
+                      <p className="text-white/80 mb-3">{person.rank}, {person.branch}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                        {person.country}
+                      </span>
+                      <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                        {person.era}
+                      </span>
+                    </div>
+                    {!isOwnPerson && person.ownerName && (
+                      <div className="flex items-center gap-2 text-white/90 mt-3">
+                        <User className="w-4 h-4" />
+                        <span>Collection Owner: {person.ownerName}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {isOwnPerson ? (
-                  <>
-                    <button
-                      onClick={onEdit}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => setShowContactForm(!showContactForm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Contact Owner
-                  </button>
-                )}
+                  <div className="flex gap-2">
+                    {isOwnPerson ? (
+                      <>
+                        <button
+                          onClick={onEdit}
+                          className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setShowContactForm(!showContactForm)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
+                      >
+                        <Mail className="w-4 h-4" />
+                        Contact Owner
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

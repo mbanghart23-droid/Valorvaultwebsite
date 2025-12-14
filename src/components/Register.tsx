@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Check } from 'lucide-react';
+import { getActiveTiers, MembershipTier } from '../utils/membershipTiers';
 
 interface RegisterProps {
-  onRegister: (name: string, email: string, password: string) => Promise<void>;
+  onRegister: (name: string, email: string, password: string, membershipTier: string) => Promise<void>;
   onSwitchToLogin: () => void;
 }
 
@@ -15,10 +16,13 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   const [captchaQuestion, setCaptchaQuestion] = useState({ num1: 0, num2: 0, answer: 0 });
   const [honeypot, setHoneypot] = useState(''); // Spam trap
   const [passwordError, setPasswordError] = useState('');
+  const [membershipTiers, setMembershipTiers] = useState<MembershipTier[]>([]);
 
   useEffect(() => {
     // Generate new CAPTCHA on mount
     generateCaptcha();
+    // Load active membership tiers
+    setMembershipTiers(getActiveTiers());
   }, []);
 
   const generateCaptcha = () => {
@@ -72,7 +76,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       setPasswordError('Passwords do not match');
       return;
     }
-    onRegister(name, email, password);
+    onRegister(name, email, password, membershipTiers[0].id);
   };
 
   return (
@@ -167,6 +171,43 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
             {passwordError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {passwordError}
+              </div>
+            )}
+
+            {/* Membership Tier Selection */}
+            {membershipTiers.length > 0 && (
+              <div>
+                <label className="block text-neutral-700 mb-3">
+                  Membership Plan
+                </label>
+                <div className="space-y-3">
+                  {membershipTiers.map((tier) => (
+                    <div
+                      key={tier.id}
+                      className="border-2 border-black bg-neutral-50 rounded-lg p-4"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-black">{tier.name}</h3>
+                          <p className="text-neutral-600 text-sm">{tier.description}</p>
+                        </div>
+                        {tier.price === 0 && (
+                          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                            Free
+                          </span>
+                        )}
+                      </div>
+                      <ul className="space-y-2 mt-3">
+                        {tier.features.map((feature, index) => (
+                          <li key={index} className="flex items-center gap-2 text-sm text-neutral-700">
+                            <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -1,5 +1,5 @@
 import { Person } from '../App';
-import { Eye, Edit2, Trash2, MapPin, Calendar, Award, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, Edit2, Trash2, MapPin, Calendar, Award, CheckCircle, XCircle, User } from 'lucide-react';
 
 interface PersonCardProps {
   person: Person;
@@ -15,7 +15,18 @@ export function PersonCard({ person, onView, onEdit, onDelete }: PersonCardProps
   return (
     <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
       <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-4 mb-4">
+          {person.profileImage ? (
+            <img
+              src={person.profileImage}
+              alt={person.name}
+              className="w-16 h-16 rounded-full object-cover border-2 border-neutral-200"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center border-2 border-neutral-200">
+              <User className="w-8 h-8 text-neutral-400" />
+            </div>
+          )}
           <div className="flex-1">
             <h3 className="text-black mb-1">{person.name}</h3>
             {person.rank && (

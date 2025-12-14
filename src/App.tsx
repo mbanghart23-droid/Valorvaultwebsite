@@ -55,6 +55,7 @@ export interface Person {
   biography?: string;
   notes?: string;
   images?: string[];
+  profileImage?: string;
   medals: PersonMedal[];
   ownerId: string;
   ownerName: string;
@@ -68,6 +69,7 @@ export interface UserProfile {
   bio?: string;
   specialization?: string;
   isDiscoverable?: boolean;
+  membershipTier?: string;
 }
 
 export interface User {
@@ -77,6 +79,7 @@ export interface User {
   isActive: boolean;
   isAdmin: boolean;
   registeredAt: string;
+  membershipTier?: string;
 }
 
 export interface ContactRequest {
@@ -155,8 +158,8 @@ function AppContent() {
     }
   };
 
-  const handleRegister = async (name: string, email: string, password: string) => {
-    const result = await register(name, email, password);
+  const handleRegister = async (name: string, email: string, password: string, membershipTier: string) => {
+    const result = await register(name, email, password, membershipTier);
     if (result.success) {
       toast.success('Registration successful! Please check your email for next steps. Your account will be activated by an administrator within 24-48 hours.', {
         duration: 8000,

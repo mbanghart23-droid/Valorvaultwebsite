@@ -33,6 +33,7 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     biography: person?.biography || '',
     notes: person?.notes || '',
     images: person?.images || [] as string[],
+    profileImage: person?.profileImage || '',
     medals: person?.medals || [] as PersonMedal[]
   });
 
@@ -91,6 +92,40 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index)
+    });
+  };
+
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // Check file size
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert(`Image size must be less than ${MAX_IMAGE_SIZE / 1024 / 1024}MB`);
+      return;
+    }
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setFormData({
+        ...formData,
+        profileImage: base64String
+      });
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input
+    e.target.value = '';
+  };
+
+  const handleRemoveProfileImage = () => {
+    setFormData({
+      ...formData,
+      profileImage: ''
     });
   };
 
@@ -202,6 +237,49 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                     placeholder="e.g., Sgt. James Mitchell"
                     required
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-neutral-700 mb-2">
+                    Profile Photo
+                  </label>
+                  {formData.profileImage ? (
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={formData.profileImage}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-neutral-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveProfileImage}
+                        className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 border border-red-200 rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                        Remove Photo
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="file"
+                        id="profileImage"
+                        accept="image/*"
+                        onChange={handleProfileImageUpload}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="profileImage"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-50 cursor-pointer transition-colors"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload Photo
+                      </label>
+                      <p className="text-neutral-500 text-sm mt-2">
+                        Optional. Max 5MB. JPG, PNG, or GIF.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -1,4 +1,5 @@
 import { Shield, Award, Users, Search, ArrowRight, Mail, Check } from 'lucide-react';
+import badgeBanditLogo from 'figma:asset/515f45d68c39d27c4ecc63c260e45e06ae265dd8.png';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LandingPageProps {
@@ -18,10 +19,18 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-black rounded-lg">
-                <Shield className="w-5 h-5 text-white" />
+              <div className="relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 rounded-xl shadow-lg">
+                <Shield className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
               </div>
-              <span className="text-black">Valor Registry</span>
+              <div>
+                <span className="text-black text-xl tracking-tight">Valor Registry</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <div className="w-1 h-1 bg-amber-600 rounded-full"></div>
+                  <div className="w-1 h-1 bg-amber-500 rounded-full"></div>
+                  <div className="w-1 h-1 bg-amber-600 rounded-full"></div>
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <a
@@ -29,7 +38,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
                 className="flex items-center gap-2 px-4 py-2 text-neutral-600 hover:text-black transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                <span className="hidden sm:inline">Have Questions?</span>
+                <span className="hidden sm:inline">Have Questions or Suggestions?</span>
               </a>
               <button
                 onClick={onSignIn || onBack}
@@ -221,6 +230,30 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             Create Free Account
             <ArrowRight className="w-5 h-5" />
           </button>
+        </div>
+      </section>
+
+      {/* Partnership Section */}
+      <section className="bg-white py-16 border-t border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            <div className="text-center md:text-right">
+              <p className="text-neutral-600 text-lg mb-2">Developed in partnership with</p>
+              <p className="text-neutral-500 text-sm">Your trusted source for militaria, medals, and military history</p>
+            </div>
+            <a
+              href="https://badgebandit.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+            >
+              <img
+                src={badgeBanditLogo}
+                alt="BadgeBandit.com - Militaria, Medals, History"
+                className="h-32 w-auto transition-transform group-hover:scale-105"
+              />
+            </a>
+          </div>
         </div>
       </section>
 

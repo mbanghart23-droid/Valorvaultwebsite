@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Plus, User, LogOut, Users, Filter, Bell, Globe, Shield, HelpCircle, Info } from 'lucide-react';
+import { Search, Plus, User, LogOut, Users, Filter, Bell, Globe, Shield, HelpCircle, Info, Download } from 'lucide-react';
 import { Person, UserProfile } from '../App';
 import { PersonCard } from './PersonCard';
 import { GlobalPersonCard } from './GlobalPersonCard';
@@ -86,6 +86,113 @@ export function Dashboard({
   const totalInCollection = persons.reduce((sum, p) => 
     sum + p.medals.filter(m => m.inCollection).length, 0
   );
+
+  const handleDownloadCSV = () => {
+    // Create CSV content
+    const headers = [
+      'Person Name',
+      'Rank',
+      'Service Number',
+      'Branch',
+      'Country',
+      'Era',
+      'Date of Birth',
+      'Date of Death',
+      'Medal Name',
+      'Medal Category',
+      'Date Awarded',
+      'In Collection',
+      'Condition',
+      'Named',
+      'Medal Number',
+      'Serial Number',
+      'Estimated Value',
+      'Acquisition Date',
+      'Acquisition Source',
+      'Description'
+    ];
+
+    const rows = [];
+    
+    persons.forEach(person => {
+      if (person.medals.length === 0) {
+        // Add person without medals
+        rows.push([
+          person.name,
+          person.rank || '',
+          person.serviceNumber || '',
+          person.branch,
+          person.country,
+          person.era,
+          person.dateOfBirth || '',
+          person.dateOfDeath || '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          ''
+        ]);
+      } else {
+        // Add person with each medal
+        person.medals.forEach(medal => {
+          rows.push([
+            person.name,
+            person.rank || '',
+            person.serviceNumber || '',
+            person.branch,
+            person.country,
+            person.era,
+            person.dateOfBirth || '',
+            person.dateOfDeath || '',
+            medal.name,
+            medal.category,
+            medal.dateAwarded || '',
+            medal.inCollection ? 'Yes' : 'No',
+            medal.condition || '',
+            medal.isNamed ? 'Yes' : 'No',
+            medal.medalNumber || '',
+            medal.serialNumber || '',
+            medal.estimatedValue || '',
+            medal.acquisitionDate || '',
+            medal.acquisitionSource || '',
+            medal.description || ''
+          ]);
+        });
+      }
+    });
+
+    // Escape CSV values
+    const escapeCSV = (value: string) => {
+      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    };
+
+    // Create CSV string
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map(row => row.map(escapeCSV).join(','))
+    ].join('\n');
+
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `valor-registry-collection-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -255,6 +362,19 @@ export function Dashboard({
             <p className="text-black text-2xl">{filteredPersons.length}</p>
           </div>
         </div>
+
+        {/* Download CSV Button */}
+        {!searchGlobal && persons.length > 0 && (
+          <div className="mb-6 flex justify-end">
+            <button
+              onClick={handleDownloadCSV}
+              className="flex items-center gap-2 px-6 py-3 bg-white border border-neutral-300 hover:bg-neutral-50 text-black rounded-lg transition-colors"
+            >
+              <Download className="w-5 h-5" />
+              Download Collection as CSV
+            </button>
+          </div>
+        )}
 
         {/* Persons Grid */}
         {filteredPersons.length === 0 ? (
