@@ -1,0 +1,978 @@
+import { Hono } from "npm:hono";
+import { cors } from "npm:hono/cors";
+import { logger } from "npm:hono/logger";
+import * as kv from "./kv_store.tsx";
+import { supabaseAdmin, verifyToken } from "./auth.tsx";
+import { initializeStorage, uploadImage, getSignedUrl, deleteImage } from "./storage.tsx";
+import { 
+  sendEmail, 
+  newRegistrationEmail, 
+  accountActivatedEmail,
+  contactRequestEmail,
+  requestApprovedEmail,
+  requestDeclinedEmail,
+  getAdminEmails,
+  passwordResetEmail,
+  passwordResetConfirmationEmail
+} from "./email.tsx";
+import {
+  isValidEmail,
+  isValidPassword,
+  getPasswordError,
+  sanitizeName,
+  sanitizeText,
+  validatePersonData,
+  sanitizePersonData,
+  validateContactMessage,
+  validateProfileData,
+  sanitizeProfileData
+} from "./validation.tsx";
+import {
+  checkRateLimit,
+  checkUserRateLimit,
+  formatResetTime,
+  RATE_LIMITS
+} from "./ratelimit.tsx";
+
+const app = new Hono();
+
+// Initialize storage on startup
+initializeStorage();
+
+// Enable logger
+app.use('*', logger(console.log));
+
+// Enable CORS for all routes and methods
+app.use(
+  "/*",
+  cors({
+    origin: "*",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
+  }),
+);
+
+// Security headers middleware
+app.use('*', async (c, next) => {
+  await next();
+  
+  // Add security headers to response
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('X-XSS-Protection', '1; mode=block');
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  c.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+});
+
+// Health check endpoint
+app.get("/make-server-8db4ea83/health", (c) => {
+  return c.json({ status: "ok" });
+});
+
+// ============== AUTH ENDPOINTS ==============
+
+// Register new user (requires admin approval)
+app.post("/make-server-8db4ea83/auth/register", async (c) => {
+  try {
+    const { name, email, password } = await c.req.json();
+    
+    if (!name || !email || !password) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+    
+    // Validate email and password
+    if (!isValidEmail(email)) {
+      return c.json({ error: 'Invalid email format' }, 400);
+    }
+    if (!isValidPassword(password)) {
+      return c.json({ error: getPasswordError(password) }, 400);
+    }
+    
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: { name },
+      email_confirm: true // Auto-confirm email since email server not configured
+    });
+    
+    if (authError || !authData.user) {
+      console.log('Registration auth error:', authError);
+      return c.json({ error: authError?.message || 'Failed to create user' }, 400);
+    }
+    
+    // Store user profile in KV store (inactive by default, needs admin approval)
+    const userProfile = {
+      id: authData.user.id,
+      email,
+      name,
+      isActive: false, // Requires admin activation
+      isAdmin: false,
+      registeredAt: new Date().toISOString(),
+      profile: {
+        collectorSince: '',
+        location: '',
+        bio: '',
+        specialization: '',
+        isDiscoverable: true
+      }
+    };
+    
+    await kv.set(`user:${authData.user.id}`, userProfile);
+    
+    // Send email to all admin users
+    const adminEmails = await getAdminEmails(kv);
+    if (adminEmails.length > 0) {
+      for (const adminEmail of adminEmails) {
+        await sendEmail({
+          to: adminEmail,
+          subject: `New User Registration - ${name}`,
+          html: newRegistrationEmail(userProfile)
+        });
+      }
+      console.log(`Sent registration emails to ${adminEmails.length} admin(s)`);
+    } else {
+      console.log('No admin users found to send registration notification');
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: 'Registration successful! Your account is pending admin approval.' 
+    });
+  } catch (error) {
+    console.log('Registration error:', error);
+    return c.json({ error: 'Registration failed' }, 500);
+  }
+});
+
+// Login
+app.post("/make-server-8db4ea83/auth/login", async (c) => {
+  try {
+    const { email, password } = await c.req.json();
+    
+    const supabaseClient = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+    
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error || !data.session) {
+      console.log('Login error:', error);
+      return c.json({ error: 'Invalid credentials' }, 401);
+    }
+    
+    // Check if user is active
+    const userProfile = await kv.get(`user:${data.user.id}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'User profile not found' }, 404);
+    }
+    
+    if (!userProfile.isActive) {
+      return c.json({ error: 'Account pending admin approval' }, 403);
+    }
+    
+    return c.json({
+      success: true,
+      accessToken: data.session.access_token,
+      user: userProfile
+    });
+  } catch (error) {
+    console.log('Login exception:', error);
+    return c.json({ error: 'Login failed' }, 500);
+  }
+});
+
+// Get current user session
+app.get("/make-server-8db4ea83/auth/session", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    return c.json({ user: userProfile });
+  } catch (error) {
+    console.log('Session error:', error);
+    return c.json({ error: 'Failed to get session' }, 500);
+  }
+});
+
+// Logout
+app.post("/make-server-8db4ea83/auth/logout", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    
+    if (accessToken) {
+      await supabaseAdmin.auth.admin.signOut(accessToken);
+    }
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.log('Logout error:', error);
+    return c.json({ success: true }); // Return success anyway
+  }
+});
+
+// Request password reset
+app.post("/make-server-8db4ea83/auth/request-password-reset", async (c) => {
+  try {
+    // Rate limiting
+    const rateLimit = await checkRateLimit(c.req, RATE_LIMITS.PASSWORD_RESET_REQUEST);
+    if (!rateLimit.allowed) {
+      return c.json({ 
+        error: `Too many password reset attempts. Please try again in ${formatResetTime(rateLimit.resetAt)}` 
+      }, 429);
+    }
+    
+    const { email } = await c.req.json();
+    
+    if (!email || !isValidEmail(email)) {
+      return c.json({ error: 'Valid email is required' }, 400);
+    }
+    
+    // Find user by email (search all users)
+    const allUsers = await kv.getByPrefix('user:');
+    const user = allUsers.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+    
+    // Always return success to prevent email enumeration attacks
+    if (!user) {
+      console.log(`Password reset requested for non-existent email: ${email}`);
+      return c.json({ 
+        success: true, 
+        message: 'If an account exists with that email, a password reset link has been sent.' 
+      });
+    }
+    
+    // Generate reset token (random string)
+    const resetToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+    
+    // Store reset token
+    await kv.set(`password-reset:${resetToken}`, {
+      userId: user.id,
+      email: user.email,
+      createdAt: new Date().toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      used: false
+    });
+    
+    // Send password reset email
+    await sendEmail({
+      to: user.email,
+      subject: 'Reset Your Valor Vault Password',
+      html: passwordResetEmail(user.name, resetToken, expiresAt.toISOString())
+    });
+    
+    console.log(`Password reset email sent to ${user.email}`);
+    
+    return c.json({ 
+      success: true, 
+      message: 'If an account exists with that email, a password reset link has been sent.' 
+    });
+  } catch (error) {
+    console.log('Request password reset error:', error);
+    return c.json({ error: 'Failed to process password reset request' }, 500);
+  }
+});
+
+// Confirm password reset
+app.post("/make-server-8db4ea83/auth/reset-password", async (c) => {
+  try {
+    // Rate limiting
+    const rateLimit = await checkRateLimit(c.req, RATE_LIMITS.PASSWORD_RESET_CONFIRM);
+    if (!rateLimit.allowed) {
+      return c.json({ 
+        error: `Too many password reset attempts. Please try again in ${formatResetTime(rateLimit.resetAt)}` 
+      }, 429);
+    }
+    
+    const { token, newPassword } = await c.req.json();
+    
+    if (!token || !newPassword) {
+      return c.json({ error: 'Token and new password are required' }, 400);
+    }
+    
+    // Validate new password
+    if (!isValidPassword(newPassword)) {
+      return c.json({ error: getPasswordError(newPassword) }, 400);
+    }
+    
+    // Get reset token data
+    const resetData = await kv.get(`password-reset:${token}`);
+    
+    if (!resetData) {
+      return c.json({ error: 'Invalid or expired reset token' }, 400);
+    }
+    
+    // Check if token has been used
+    if (resetData.used) {
+      return c.json({ error: 'This reset link has already been used' }, 400);
+    }
+    
+    // Check if token has expired
+    if (new Date() > new Date(resetData.expiresAt)) {
+      await kv.del(`password-reset:${token}`);
+      return c.json({ error: 'This reset link has expired. Please request a new one.' }, 400);
+    }
+    
+    // Update password in Supabase Auth
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(
+      resetData.userId,
+      { password: newPassword }
+    );
+    
+    if (error) {
+      console.log('Password update error:', error);
+      return c.json({ error: 'Failed to update password' }, 500);
+    }
+    
+    // Mark token as used
+    resetData.used = true;
+    await kv.set(`password-reset:${token}`, resetData);
+    
+    // Get user profile for confirmation email
+    const userProfile = await kv.get(`user:${resetData.userId}`);
+    
+    if (userProfile) {
+      // Send confirmation email
+      await sendEmail({
+        to: userProfile.email,
+        subject: 'Your Valor Vault Password Has Been Changed',
+        html: passwordResetConfirmationEmail(userProfile.name)
+      });
+      
+      console.log(`Password reset confirmation email sent to ${userProfile.email}`);
+    }
+    
+    return c.json({ 
+      success: true, 
+      message: 'Password successfully reset. You can now log in with your new password.' 
+    });
+  } catch (error) {
+    console.log('Reset password error:', error);
+    return c.json({ error: 'Failed to reset password' }, 500);
+  }
+});
+
+// ============== USER PROFILE ENDPOINTS ==============
+
+// Get user profile
+app.get("/make-server-8db4ea83/profile", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    return c.json({ profile: userProfile.profile });
+  } catch (error) {
+    console.log('Get profile error:', error);
+    return c.json({ error: 'Failed to get profile' }, 500);
+  }
+});
+
+// Update user profile
+app.put("/make-server-8db4ea83/profile", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const updates = await c.req.json();
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    // Validate and sanitize profile data
+    const validation = validateProfileData(updates);
+    if (!validation.valid) {
+      return c.json({ error: validation.errors.join(', ') }, 400);
+    }
+    const sanitizedUpdates = sanitizeProfileData(updates);
+    
+    userProfile.profile = { ...userProfile.profile, ...sanitizedUpdates };
+    await kv.set(`user:${userId}`, userProfile);
+    
+    return c.json({ success: true, profile: userProfile.profile });
+  } catch (error) {
+    console.log('Update profile error:', error);
+    return c.json({ error: 'Failed to update profile' }, 500);
+  }
+});
+
+// ============== PERSON ENDPOINTS ==============
+
+// Get all persons for current user
+app.get("/make-server-8db4ea83/persons", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const persons = await kv.getByPrefix(`person:${userId}:`);
+    
+    // Get signed URLs for images
+    for (const person of persons) {
+      if (person.imageFiles && person.imageFiles.length > 0) {
+        person.images = [];
+        for (const filePath of person.imageFiles) {
+          const signedUrl = await getSignedUrl(filePath);
+          if (signedUrl) {
+            person.images.push(signedUrl);
+          }
+        }
+      }
+    }
+    
+    return c.json({ persons });
+  } catch (error) {
+    console.log('Get persons error:', error);
+    return c.json({ error: 'Failed to get persons' }, 500);
+  }
+});
+
+// Get single person
+app.get("/make-server-8db4ea83/persons/:id", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const personId = c.req.param('id');
+    const person = await kv.get(`person:${userId}:${personId}`);
+    
+    if (!person) {
+      return c.json({ error: 'Person not found' }, 404);
+    }
+    
+    // Get signed URLs for images
+    if (person.imageFiles && person.imageFiles.length > 0) {
+      person.images = [];
+      for (const filePath of person.imageFiles) {
+        const signedUrl = await getSignedUrl(filePath);
+        if (signedUrl) {
+          person.images.push(signedUrl);
+        }
+      }
+    }
+    
+    return c.json({ person });
+  } catch (error) {
+    console.log('Get person error:', error);
+    return c.json({ error: 'Failed to get person' }, 500);
+  }
+});
+
+// Create person
+app.post("/make-server-8db4ea83/persons", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const personData = await c.req.json();
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    const personId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Handle image uploads
+    const imageFiles = [];
+    if (personData.images && personData.images.length > 0) {
+      for (let i = 0; i < personData.images.length; i++) {
+        const imageData = personData.images[i];
+        const fileName = `person-${personId}-${i}.jpg`;
+        const filePath = await uploadImage(userId, imageData, fileName);
+        if (filePath) {
+          imageFiles.push(filePath);
+        }
+      }
+    }
+    
+    // Validate and sanitize person data
+    const validatedData = validatePersonData(personData);
+    const sanitizedData = sanitizePersonData(validatedData);
+    
+    const person = {
+      id: personId,
+      ...sanitizedData,
+      imageFiles, // Store file paths
+      images: undefined, // Remove base64 images
+      ownerId: userId,
+      ownerName: userProfile.name,
+      medals: personData.medals || []
+    };
+    
+    await kv.set(`person:${userId}:${personId}`, person);
+    
+    return c.json({ success: true, person });
+  } catch (error) {
+    console.log('Create person error:', error);
+    return c.json({ error: 'Failed to create person' }, 500);
+  }
+});
+
+// Update person
+app.put("/make-server-8db4ea83/persons/:id", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const personId = c.req.param('id');
+    const updates = await c.req.json();
+    const existingPerson = await kv.get(`person:${userId}:${personId}`);
+    
+    if (!existingPerson) {
+      return c.json({ error: 'Person not found' }, 404);
+    }
+    
+    // Handle new image uploads
+    let imageFiles = existingPerson.imageFiles || [];
+    if (updates.images && updates.images.length > 0) {
+      // Delete old images
+      for (const filePath of imageFiles) {
+        await deleteImage(filePath);
+      }
+      
+      // Upload new images
+      imageFiles = [];
+      for (let i = 0; i < updates.images.length; i++) {
+        const imageData = updates.images[i];
+        if (imageData.startsWith('data:')) {
+          const fileName = `person-${personId}-${i}.jpg`;
+          const filePath = await uploadImage(userId, imageData, fileName);
+          if (filePath) {
+            imageFiles.push(filePath);
+          }
+        }
+      }
+    }
+    
+    // Validate and sanitize person data
+    const validatedUpdates = validatePersonData(updates);
+    const sanitizedUpdates = sanitizePersonData(validatedUpdates);
+    
+    const person = {
+      ...existingPerson,
+      ...sanitizedUpdates,
+      imageFiles,
+      images: undefined,
+      id: personId,
+      ownerId: userId
+    };
+    
+    await kv.set(`person:${userId}:${personId}`, person);
+    
+    return c.json({ success: true, person });
+  } catch (error) {
+    console.log('Update person error:', error);
+    return c.json({ error: 'Failed to update person' }, 500);
+  }
+});
+
+// Delete person
+app.delete("/make-server-8db4ea83/persons/:id", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const personId = c.req.param('id');
+    const person = await kv.get(`person:${userId}:${personId}`);
+    
+    if (!person) {
+      return c.json({ error: 'Person not found' }, 404);
+    }
+    
+    // Delete images from storage
+    if (person.imageFiles && person.imageFiles.length > 0) {
+      for (const filePath of person.imageFiles) {
+        await deleteImage(filePath);
+      }
+    }
+    
+    await kv.del(`person:${userId}:${personId}`);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.log('Delete person error:', error);
+    return c.json({ error: 'Failed to delete person' }, 500);
+  }
+});
+
+// ============== GLOBAL SEARCH ENDPOINTS ==============
+
+// Get all discoverable persons (for global search)
+app.get("/make-server-8db4ea83/search/persons", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const allPersons = await kv.getByPrefix('person:');
+    
+    // Filter to only discoverable persons
+    const discoverablePersons = [];
+    for (const person of allPersons) {
+      const ownerProfile = await kv.get(`user:${person.ownerId}`);
+      if (ownerProfile && ownerProfile.profile.isDiscoverable) {
+        // Get signed URLs for images
+        if (person.imageFiles && person.imageFiles.length > 0) {
+          person.images = [];
+          for (const filePath of person.imageFiles) {
+            const signedUrl = await getSignedUrl(filePath);
+            if (signedUrl) {
+              person.images.push(signedUrl);
+            }
+          }
+        }
+        discoverablePersons.push(person);
+      }
+    }
+    
+    return c.json({ persons: discoverablePersons });
+  } catch (error) {
+    console.log('Search persons error:', error);
+    return c.json({ error: 'Failed to search persons' }, 500);
+  }
+});
+
+// ============== CONTACT REQUEST ENDPOINTS ==============
+
+// Get contact requests for current user
+app.get("/make-server-8db4ea83/contact-requests", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const requests = await kv.getByPrefix(`contact-request:to:${userId}:`);
+    
+    return c.json({ requests });
+  } catch (error) {
+    console.log('Get contact requests error:', error);
+    return c.json({ error: 'Failed to get contact requests' }, 500);
+  }
+});
+
+// Send contact request
+app.post("/make-server-8db4ea83/contact-requests", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const { personId, toUserId, message } = await c.req.json();
+    const userProfile = await kv.get(`user:${userId}`);
+    const person = await kv.get(`person:${toUserId}:${personId}`);
+    
+    if (!userProfile || !person) {
+      return c.json({ error: 'Invalid request' }, 400);
+    }
+    
+    // Validate contact message
+    if (!validateContactMessage(message)) {
+      return c.json({ error: 'Invalid contact message' }, 400);
+    }
+    
+    const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const contactRequest = {
+      id: requestId,
+      fromUserId: userId,
+      fromUserName: userProfile.name,
+      fromUserEmail: userProfile.email,
+      toUserId,
+      personId,
+      personName: person.name,
+      message,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    
+    await kv.set(`contact-request:to:${toUserId}:${requestId}`, contactRequest);
+    
+    // Send email to recipient
+    const toUserProfile = await kv.get(`user:${toUserId}`);
+    if (toUserProfile) {
+      await sendEmail({
+        to: toUserProfile.email,
+        subject: `New Contact Request - ${person.name}`,
+        html: contactRequestEmail(contactRequest)
+      });
+      console.log(`Sent contact request email to ${toUserProfile.email}`);
+    }
+    
+    return c.json({ success: true, request: contactRequest });
+  } catch (error) {
+    console.log('Send contact request error:', error);
+    return c.json({ error: 'Failed to send contact request' }, 500);
+  }
+});
+
+// Approve contact request
+app.put("/make-server-8db4ea83/contact-requests/:id/approve", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const requestId = c.req.param('id');
+    const request = await kv.get(`contact-request:to:${userId}:${requestId}`);
+    
+    if (!request) {
+      return c.json({ error: 'Request not found' }, 404);
+    }
+    
+    request.status = 'approved';
+    await kv.set(`contact-request:to:${userId}:${requestId}`, request);
+    
+    // Send email to sender
+    const fromUserProfile = await kv.get(`user:${request.fromUserId}`);
+    if (fromUserProfile) {
+      await sendEmail({
+        to: fromUserProfile.email,
+        subject: 'Contact Request Approved',
+        html: requestApprovedEmail(request)
+      });
+      console.log(`Sent approval email to ${fromUserProfile.email}`);
+    }
+    
+    return c.json({ success: true, request });
+  } catch (error) {
+    console.log('Approve request error:', error);
+    return c.json({ error: 'Failed to approve request' }, 500);
+  }
+});
+
+// Decline contact request
+app.put("/make-server-8db4ea83/contact-requests/:id/decline", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const requestId = c.req.param('id');
+    const request = await kv.get(`contact-request:to:${userId}:${requestId}`);
+    
+    if (!request) {
+      return c.json({ error: 'Request not found' }, 404);
+    }
+    
+    request.status = 'declined';
+    await kv.set(`contact-request:to:${userId}:${requestId}`, request);
+    
+    // Send email to sender
+    const fromUserProfile = await kv.get(`user:${request.fromUserId}`);
+    if (fromUserProfile) {
+      await sendEmail({
+        to: fromUserProfile.email,
+        subject: 'Contact Request Update',
+        html: requestDeclinedEmail(request)
+      });
+      console.log(`Sent decline email to ${fromUserProfile.email}`);
+    }
+    
+    return c.json({ success: true, request });
+  } catch (error) {
+    console.log('Decline request error:', error);
+    return c.json({ error: 'Failed to decline request' }, 500);
+  }
+});
+
+// ============== ADMIN ENDPOINTS ==============
+
+// Get all users (admin only)
+app.get("/make-server-8db4ea83/admin/users", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const users = await kv.getByPrefix('user:');
+    
+    return c.json({ users });
+  } catch (error) {
+    console.log('Get users error:', error);
+    return c.json({ error: 'Failed to get users' }, 500);
+  }
+});
+
+// Activate user (admin only)
+app.put("/make-server-8db4ea83/admin/users/:id/activate", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const targetUserId = c.req.param('id');
+    const targetUser = await kv.get(`user:${targetUserId}`);
+    
+    if (!targetUser) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    targetUser.isActive = true;
+    await kv.set(`user:${targetUserId}`, targetUser);
+    
+    // Send email to user
+    await sendEmail({
+      to: targetUser.email,
+      subject: 'Welcome to Valor Vault - Account Activated!',
+      html: accountActivatedEmail(targetUser)
+    });
+    console.log(`Sent activation email to ${targetUser.email}`);
+    
+    return c.json({ success: true, user: targetUser });
+  } catch (error) {
+    console.log('Activate user error:', error);
+    return c.json({ error: 'Failed to activate user' }, 500);
+  }
+});
+
+// Deactivate user (admin only)
+app.put("/make-server-8db4ea83/admin/users/:id/deactivate", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const targetUserId = c.req.param('id');
+    const targetUser = await kv.get(`user:${targetUserId}`);
+    
+    if (!targetUser) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    targetUser.isActive = false;
+    await kv.set(`user:${targetUserId}`, targetUser);
+    
+    return c.json({ success: true, user: targetUser });
+  } catch (error) {
+    console.log('Deactivate user error:', error);
+    return c.json({ error: 'Failed to deactivate user' }, 500);
+  }
+});
+
+// Delete user (admin only)
+app.delete("/make-server-8db4ea83/admin/users/:id", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const targetUserId = c.req.param('id');
+    const targetUser = await kv.get(`user:${targetUserId}`);
+    
+    if (!targetUser) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    // Delete all persons owned by this user
+    const persons = await kv.getByPrefix(`person:${targetUserId}:`);
+    for (const person of persons) {
+      // Delete images
+      if (person.imageFiles && person.imageFiles.length > 0) {
+        for (const filePath of person.imageFiles) {
+          await deleteImage(filePath);
+        }
+      }
+      await kv.del(`person:${targetUserId}:${person.id}`);
+    }
+    
+    // Delete user profile
+    await kv.del(`user:${targetUserId}`);
+    
+    // Delete from Supabase Auth
+    await supabaseAdmin.auth.admin.deleteUser(targetUserId);
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.log('Delete user error:', error);
+    return c.json({ error: 'Failed to delete user' }, 500);
+  }
+});
+
+// Helper to import createClient in Deno environment
+async function createClient(url: string, key: string) {
+  const { createClient: create } = await import('npm:@supabase/supabase-js@2');
+  return create(url, key);
+}
+
+Deno.serve(app.fetch);

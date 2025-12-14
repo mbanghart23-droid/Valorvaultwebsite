@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (email: string, password: string) => Promise<void>;
   onSwitchToRegister: () => void;
+  onForgotPassword: () => void;
 }
 
-export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
+export function Login({ onLogin, onSwitchToRegister, onForgotPassword }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [captchaQuestion, setCaptchaQuestion] = useState({ num1: 0, num2: 0, answer: 0 });
   const [honeypot, setHoneypot] = useState(''); // Spam trap
@@ -25,8 +30,14 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
     setCaptchaAnswer('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
     // Check honeypot (should be empty)
     if (honeypot !== '') {
@@ -34,14 +45,35 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
       return;
     }
 
+    // Frontend validation
+    if (!email.trim() || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     // Check CAPTCHA
     if (parseInt(captchaAnswer) !== captchaQuestion.answer) {
-      alert('Incorrect answer to security question. Please try again.');
+      setError('Incorrect answer to security question');
+      toast.error('Incorrect answer to security question');
       generateCaptcha();
       return;
     }
 
-    onLogin();
+    setIsLoading(true);
+
+    try {
+      await onLogin(email, password);
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+      generateCaptcha(); // Regenerate CAPTCHA on error
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -57,6 +89,12 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
 
         <div className="bg-white rounded-xl shadow-sm p-8 border border-neutral-200">
           <h2 className="text-black mb-6">Sign In</h2>
+          
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+              {error}
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Honeypot field - hidden from real users */}
@@ -89,15 +127,24 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
               <label htmlFor="password" className="block text-neutral-700 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-500 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             {/* CAPTCHA */}
@@ -119,8 +166,9 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
             <button
               type="submit"
               className="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-lg transition-colors"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
             </button>
           </form>
 
@@ -132,6 +180,15 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
                 className="text-black hover:underline transition-colors"
               >
                 Register
+              </button>
+            </p>
+            <p className="text-neutral-600">
+              Forgot your password?{' '}
+              <button
+                onClick={onForgotPassword}
+                className="text-black hover:underline transition-colors"
+              >
+                Reset Password
               </button>
             </p>
           </div>

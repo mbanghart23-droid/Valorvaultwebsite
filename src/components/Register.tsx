@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 
 interface RegisterProps {
-  onRegister: () => void;
+  onRegister: (name: string, email: string, password: string) => Promise<void>;
   onSwitchToLogin: () => void;
 }
 
@@ -47,7 +47,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       alert('Passwords do not match');
       return;
     }
-    onRegister();
+    onRegister(name, email, password);
   };
 
   return (
