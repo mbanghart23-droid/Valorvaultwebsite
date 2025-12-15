@@ -47,7 +47,7 @@ export interface Person {
   rank?: string[];
   serviceNumber?: string;
   branch?: string;
-  country?: string;
+  country?: string[];
   era?: string[];
   dateOfBirth?: string;
   dateOfDeath?: string;
@@ -100,6 +100,8 @@ function AppContent() {
   const { user, accessToken, isLoading, login, register, logout } = useAuth();
   const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'profile' | 'add-person' | 'edit-person' | 'person-detail' | 'notifications' | 'admin' | 'contact-support' | 'landing-page' | 'terms-of-service' | 'privacy-policy' | 'forgot-password' | 'reset-password'>('landing-page');
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [viewHistory, setViewHistory] = useState<string[]>(['landing-page']);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const [persons, setPersons] = useState<Person[]>([]);
   const [globalPersons, setGlobalPersons] = useState<Person[]>([]);
@@ -190,30 +192,46 @@ function AppContent() {
   const handleAddPerson = async (person: Omit<Person, 'id' | 'ownerId' | 'ownerName'>) => {
     if (!accessToken) return;
 
-    const newPerson = await personsApi.createPerson(person, accessToken);
-    if (newPerson) {
-      setPersons([...persons, newPerson]);
-      // Refresh global persons
-      const globalData = await personsApi.fetchGlobalPersons(accessToken);
-      setGlobalPersons(globalData);
-      setCurrentView('dashboard');
-    } else {
-      toast.error('Failed to add person');
+    setIsProcessing(true);
+    try {
+      const newPerson = await personsApi.createPerson(person, accessToken);
+      if (newPerson) {
+        setPersons([...persons, newPerson]);
+        // Refresh global persons
+        const globalData = await personsApi.fetchGlobalPersons(accessToken);
+        setGlobalPersons(globalData);
+        toast.success('Service member added successfully!');
+        setCurrentView('dashboard');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to add service member';
+      console.error('Add person error:', errorMessage);
+      toast.error(`Error: ${errorMessage}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleEditPerson = async (updatedPerson: Person) => {
     if (!accessToken) return;
 
-    const result = await personsApi.updatePerson(updatedPerson, accessToken);
-    if (result) {
-      setPersons(persons.map(p => p.id === updatedPerson.id ? result : p));
-      // Refresh global persons
-      const globalData = await personsApi.fetchGlobalPersons(accessToken);
-      setGlobalPersons(globalData);
-      setCurrentView('dashboard');
-    } else {
-      toast.error('Failed to update person');
+    setIsProcessing(true);
+    try {
+      const result = await personsApi.updatePerson(updatedPerson, accessToken);
+      if (result) {
+        setPersons(persons.map(p => p.id === updatedPerson.id ? result : p));
+        // Refresh global persons
+        const globalData = await personsApi.fetchGlobalPersons(accessToken);
+        setGlobalPersons(globalData);
+        toast.success('Service member updated successfully!');
+        setCurrentView('dashboard');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to update service member';
+      console.error('Update person error:', errorMessage);
+      toast.error(`Error: ${errorMessage}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 

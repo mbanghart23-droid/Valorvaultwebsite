@@ -247,7 +247,7 @@ export function MedalForm({ medal, onSubmit, onCancel }: MedalFormProps) {
 
                 <div>
                   <label htmlFor="estimatedValue" className="block text-slate-300 mb-2">
-                    Estimated Value
+                    Acquisition Price
                   </label>
                   <input
                     id="estimatedValue"

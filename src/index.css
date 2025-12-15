@@ -2152,6 +2152,13 @@
   --sidebar-ring: oklch(.439 0 0);
 }
 
+@layer components {
+  button:active {
+    transition: transform .1s;
+    transform: scale(.98);
+  }
+}
+
 html {
   font-size: var(--font-size);
 }

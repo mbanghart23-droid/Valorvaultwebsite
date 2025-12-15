@@ -35,10 +35,10 @@ export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: P
             {person.rank && person.rank.length > 0 && (
               <p className="text-neutral-600 text-sm mb-2">{person.rank.join(', ')}{person.branch ? `, ${person.branch}` : ''}</p>
             )}
-            {person.country && (
+            {person.country && person.country.length > 0 && (
               <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
                 <MapPin className="w-4 h-4" />
-                <span>{person.country}</span>
+                <span>{person.country.join(', ')}</span>
               </div>
             )}
             {person.era && person.era.length > 0 && (

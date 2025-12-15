@@ -257,7 +257,7 @@ export function MedalDetail({ medal, onBack, onEdit, onDelete, onContactOwner }:
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <DollarSign className="w-4 h-4 text-amber-500" />
-                          <p className="text-slate-400 text-sm">Estimated Value</p>
+                          <p className="text-slate-400 text-sm">Acquisition Price</p>
                         </div>
                         <p className="text-white">{medal.estimatedValue}</p>
                       </div>

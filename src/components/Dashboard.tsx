@@ -108,7 +108,7 @@ export function Dashboard({
   const personsToSearch = searchGlobal ? globalPersons : persons;
 
   // Get unique values for filters
-  const countries = Array.from(new Set(personsToSearch.map(p => p.country).filter(Boolean))).sort();
+  const countries = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.country) ? p.country : (p.country ? [p.country] : [])))).sort();
   const eras = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.era) ? p.era : (p.era ? [p.era] : [])))).sort();
   const branches = Array.from(new Set(personsToSearch.map(p => p.branch).filter(Boolean))).sort();
   const categories = Array.from(new Set(personsToSearch.flatMap(p => p.medals.map(m => m.category)))).sort();
@@ -119,7 +119,7 @@ export function Dashboard({
     // Check if search matches person fields OR any medal fields
     const matchesPersonFields = searchQuery === '' || 
       matchesWildcard(person.name, searchQuery) ||
-      (person.country && matchesWildcard(person.country, searchQuery)) ||
+      (Array.isArray(person.country) && person.country.some(c => matchesWildcard(c, searchQuery))) ||
       (person.branch && matchesWildcard(person.branch, searchQuery)) ||
       (Array.isArray(person.era) && person.era.some(e => matchesWildcard(e, searchQuery))) ||
       (Array.isArray(person.rank) && person.rank.some(r => matchesWildcard(r, searchQuery))) ||
@@ -138,7 +138,7 @@ export function Dashboard({
 
     const matchesSearch = matchesPersonFields || matchesMedalFields;
 
-    const matchesCountry = filterCountry === '' || person.country === filterCountry;
+    const matchesCountry = filterCountry === '' || (Array.isArray(person.country) && person.country.includes(filterCountry));
     const matchesEra = filterEra === '' || (Array.isArray(person.era) && person.era.includes(filterEra));
     const matchesBranch = filterBranch === '' || person.branch === filterBranch;
     const matchesCategory = filterCategory === '' || person.medals.some(m => m.category === filterCategory);

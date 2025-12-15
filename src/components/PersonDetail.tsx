@@ -68,11 +68,11 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                       <p className="text-white/80 mb-3">{person.rank.join(', ')}{person.branch ? `, ${person.branch}` : ''}</p>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      {person.country && (
-                        <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                          {person.country}
+                      {person.country && person.country.length > 0 && person.country.map((c, i) => (
+                        <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                          {c}
                         </span>
-                      )}
+                      ))}
                       {person.era && person.era.length > 0 && person.era.map((e, i) => (
                         <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
                           {e}
@@ -193,10 +193,16 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                         <p className="text-black">{person.branch}</p>
                       </div>
                     )}
-                    {person.country && (
-                      <div>
-                        <p className="text-neutral-600 text-sm mb-1">Country</p>
-                        <p className="text-black">{person.country}</p>
+                    {person.country && person.country.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-neutral-600 text-sm mb-1">Countries</p>
+                        <div className="flex flex-wrap gap-2">
+                          {person.country.map((c, i) => (
+                            <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {person.era && person.era.length > 0 && (

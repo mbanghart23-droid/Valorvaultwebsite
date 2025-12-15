@@ -41,15 +41,15 @@ export async function createPerson(
     
     if (!response.ok) {
       const error = await response.json();
-      console.error('Create person error:', error);
-      throw new Error(error.error || 'Failed to create person');
+      console.error('Create person API error:', error);
+      throw new Error(error.error || error.message || 'Failed to create person');
     }
     
     const data = await response.json();
     return data.person;
   } catch (error) {
     console.error('Create person error:', error);
-    return null;
+    throw error; // Re-throw to let caller handle it
   }
 }
 
@@ -65,15 +65,15 @@ export async function updatePerson(
     
     if (!response.ok) {
       const error = await response.json();
-      console.error('Update person error:', error);
-      throw new Error(error.error || 'Failed to update person');
+      console.error('Update person API error:', error);
+      throw new Error(error.error || error.message || 'Failed to update person');
     }
     
     const data = await response.json();
     return data.person;
   } catch (error) {
     console.error('Update person error:', error);
-    return null;
+    throw error; // Re-throw to let caller handle it
   }
 }
 

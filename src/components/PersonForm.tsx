@@ -24,7 +24,7 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     rank: person?.rank || [] as string[],
     serviceNumber: person?.serviceNumber || '',
     branch: person?.branch || '',
-    country: person?.country || '',
+    country: person?.country || [] as string[],
     era: person?.era || [] as string[],
     dateOfBirth: person?.dateOfBirth || '',
     dateOfDeath: person?.dateOfDeath || '',
@@ -49,11 +49,13 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     clasps: []
   });
   const [claspInput, setClaspInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for adding new array items
   const [rankInput, setRankInput] = useState('');
   const [unitInput, setUnitInput] = useState('');
   const [eraInput, setEraInput] = useState('');
+  const [countryInput, setCountryInput] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -145,48 +147,62 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
   };
 
   const handleAddMedal = () => {
-    if (medalFormData.name && medalFormData.category) {
-      const newMedal: PersonMedal = {
-        id: `m${Date.now()}`,
-        name: medalFormData.name,
-        country: medalFormData.country || formData.country,
-        branch: medalFormData.branch || formData.branch,
-        era: medalFormData.era || formData.era,
-        category: medalFormData.category,
-        inCollection: medalFormData.inCollection || false,
-        dateAwarded: medalFormData.dateAwarded,
-        condition: medalFormData.condition,
-        description: medalFormData.description,
-        acquisitionDate: medalFormData.acquisitionDate,
-        acquisitionSource: medalFormData.acquisitionSource,
-        estimatedValue: medalFormData.estimatedValue,
-        serialNumber: medalFormData.serialNumber,
-        medalNumber: medalFormData.medalNumber,
-        isNamed: medalFormData.isNamed,
-        clasps: medalFormData.clasps || []
-      };
-
-      if (editingMedalIndex !== null) {
-        const updatedMedals = [...formData.medals];
-        updatedMedals[editingMedalIndex] = newMedal;
-        setFormData({ ...formData, medals: updatedMedals });
-        setEditingMedalIndex(null);
-      } else {
-        setFormData({ ...formData, medals: [...formData.medals, newMedal] });
-      }
-
-      setMedalFormData({
-        name: '',
-        country: '',
-        branch: '',
-        era: '',
-        category: '',
-        inCollection: false,
-        clasps: []
-      });
-      setClaspInput('');
-      setShowMedalForm(false);
+    // Validate required fields
+    const errors: string[] = [];
+    
+    if (!medalFormData.name || medalFormData.name.trim() === '') {
+      errors.push('Medal name is required');
     }
+    
+    if (!medalFormData.category || medalFormData.category.trim() === '') {
+      errors.push('Category is required');
+    }
+    
+    if (errors.length > 0) {
+      alert(`Please fix the following errors:\n\n${errors.join('\n')}`);
+      return;
+    }
+    
+    const newMedal: PersonMedal = {
+      id: `m${Date.now()}`,
+      name: medalFormData.name,
+      country: medalFormData.country || (Array.isArray(formData.country) ? formData.country.join(', ') : ''),
+      branch: medalFormData.branch || formData.branch,
+      era: medalFormData.era || (Array.isArray(formData.era) ? formData.era.join(', ') : ''),
+      category: medalFormData.category,
+      inCollection: medalFormData.inCollection || false,
+      dateAwarded: medalFormData.dateAwarded,
+      condition: medalFormData.condition,
+      description: medalFormData.description,
+      acquisitionDate: medalFormData.acquisitionDate,
+      acquisitionSource: medalFormData.acquisitionSource,
+      estimatedValue: medalFormData.estimatedValue,
+      serialNumber: medalFormData.serialNumber,
+      medalNumber: medalFormData.medalNumber,
+      isNamed: medalFormData.isNamed,
+      clasps: medalFormData.clasps || []
+    };
+
+    if (editingMedalIndex !== null) {
+      const updatedMedals = [...formData.medals];
+      updatedMedals[editingMedalIndex] = newMedal;
+      setFormData({ ...formData, medals: updatedMedals });
+      setEditingMedalIndex(null);
+    } else {
+      setFormData({ ...formData, medals: [...formData.medals, newMedal] });
+    }
+
+    setMedalFormData({
+      name: '',
+      country: '',
+      branch: '',
+      era: '',
+      category: '',
+      inCollection: false,
+      clasps: []
+    });
+    setClaspInput('');
+    setShowMedalForm(false);
   };
 
   const handleEditMedal = (index: number) => {
@@ -205,10 +221,19 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     if (person) {
       onSubmit({ ...person, ...formData });
     } else {
       onSubmit(formData);
+    }
+    setIsSubmitting(false);
+  };
+
+  // Prevent Enter key from submitting the form (except on buttons)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON') {
+      e.preventDefault();
     }
   };
 
@@ -228,7 +253,7 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
         <div className="bg-white border border-neutral-200 rounded-xl p-8">
           <h2 className="text-black mb-6">{person ? 'Edit Service Member' : 'Add Service Member'}</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
             {/* Personal Information */}
             <div>
               <h3 className="text-black mb-4">Personal Information</h3>
@@ -385,14 +410,69 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                 </div>
 
                 <div>
-                  <ComboBox
-                    name="country"
-                    value={formData.country}
-                    onChange={(value) => setFormData({ ...formData, country: value })}
-                    options={existingCountries}
-                    label="Country"
-                    placeholder="e.g., United States"
-                  />
+                  <label className="block text-neutral-700 mb-2">
+                    Country
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={countryInput}
+                      onChange={(e) => setCountryInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (countryInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              country: [...formData.country, countryInput.trim()]
+                            });
+                            setCountryInput('');
+                          }
+                        }
+                      }}
+                      placeholder="e.g., United States"
+                      className="flex-1 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (countryInput.trim()) {
+                          setFormData({
+                            ...formData,
+                            country: [...formData.country, countryInput.trim()]
+                          });
+                          setCountryInput('');
+                        }
+                      }}
+                      className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                    >
+                      Add Country
+                    </button>
+                  </div>
+                  {formData.country && formData.country.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.country.map((country, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-neutral-100 text-black rounded-full text-sm"
+                        >
+                          {country}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                country: formData.country?.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="ml-1 text-neutral-500 hover:text-black"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
