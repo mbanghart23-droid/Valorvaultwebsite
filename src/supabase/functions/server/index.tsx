@@ -1211,6 +1211,7 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
     
     // Get all persons from all users
     const allPersons = await kv.getByPrefix('person:');
+    console.log(`[STATS] Analyzing ${allPersons.length} person records`);
     
     // Initialize counters for each field
     const stats: Record<string, Record<string, number>> = {
@@ -1235,9 +1236,11 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
       if (person.era) {
         if (Array.isArray(person.era)) {
           for (const e of person.era) {
+            console.log(`[STATS] Person ${person.id} has era (array): ${JSON.stringify(person.era)}`);
             stats.era[e] = (stats.era[e] || 0) + 1;
           }
         } else if (typeof person.era === 'string') {
+          console.log(`[STATS] Person ${person.id} has era (string): "${person.era}"`);
           stats.era[person.era] = (stats.era[person.era] || 0) + 1;
         }
       }
@@ -1392,7 +1395,7 @@ app.post("/make-server-8db4ea83/admin/dropdown-rename", async (c) => {
       
       // Save if updated
       if (updated) {
-        await kv.set(`person:${person.id}`, person);
+        await kv.set(`person:${person.ownerId}:${person.id}`, person);
         updatedCount++;
       }
     }
@@ -1535,7 +1538,7 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
       
       // Save if updated
       if (updated) {
-        await kv.set(`person:${person.id}`, person);
+        await kv.set(`person:${person.ownerId}:${person.id}`, person);
         updatedCount++;
       }
     }
@@ -1635,7 +1638,7 @@ app.post("/make-server-8db4ea83/admin/dropdown-delete", async (c) => {
       
       // Save if updated
       if (updated) {
-        await kv.set(`person:${person.id}`, person);
+        await kv.set(`person:${person.ownerId}:${person.id}`, person);
         updatedCount++;
       }
     }
