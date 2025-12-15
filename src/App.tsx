@@ -242,11 +242,8 @@ function AppContent() {
 
     const result = await profileApi.updateProfile(profile, accessToken);
     if (result) {
-      setUserProfile({
-        ...result,
-        name: user?.name || '',
-        email: user?.email || ''
-      });
+      setUserProfile(result);
+      toast.success('Profile updated successfully');
       setCurrentView('dashboard');
     } else {
       toast.error('Failed to update profile');

@@ -431,14 +431,24 @@ app.put("/make-server-8db4ea83/profile", async (c) => {
     // Update name and email in the main user record if provided
     if (sanitizedUpdates.name) {
       userProfile.name = sanitizedUpdates.name;
+      userProfile.profile.name = sanitizedUpdates.name;
     }
     if (sanitizedUpdates.email) {
       userProfile.email = sanitizedUpdates.email;
+      userProfile.profile.email = sanitizedUpdates.email;
     }
     
     await kv.set(`user:${userId}`, userProfile);
     
-    return c.json({ success: true, profile: userProfile.profile });
+    // Return the full profile with updated name and email
+    return c.json({ 
+      success: true, 
+      profile: {
+        ...userProfile.profile,
+        name: userProfile.name,
+        email: userProfile.email
+      }
+    });
   } catch (error) {
     console.log('Update profile error:', error);
     return c.json({ error: 'Failed to update profile' }, 500);
