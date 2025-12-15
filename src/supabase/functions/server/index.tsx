@@ -19,9 +19,6 @@ async function getByPrefixWithKeys(prefix: string): Promise<Array<{ key: string;
   return data ?? [];
 }
 
-// Initialize storage on startup
-initializeStorage();
-
 // Enable logger
 app.use('*', logger(console.log));
 
