@@ -1247,8 +1247,10 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
       if (person.branch) {
         stats.branch[person.branch] = (stats.branch[person.branch] || 0) + 1;
       }
-      if (person.country) {
-        stats.country[person.country] = (stats.country[person.country] || 0) + 1;
+      if (person.country && Array.isArray(person.country)) {
+        for (const c of person.country) {
+          stats.country[c] = (stats.country[c] || 0) + 1;
+        }
       }
       
       // Count medal-level categories and clasps

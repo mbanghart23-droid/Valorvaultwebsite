@@ -16,6 +16,7 @@ import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { ForgotPassword } from './components/ForgotPassword';
 import { ResetPassword } from './components/ResetPassword';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { About } from './components/About';
 import * as personsApi from './utils/api/persons';
 import * as profileApi from './utils/api/profile';
 import * as contactsApi from './utils/api/contacts';
@@ -98,7 +99,7 @@ export interface ContactRequest {
 
 function AppContent() {
   const { user, accessToken, isLoading, login, register, logout } = useAuth();
-  const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'profile' | 'add-person' | 'edit-person' | 'person-detail' | 'notifications' | 'admin' | 'contact-support' | 'landing-page' | 'terms-of-service' | 'privacy-policy' | 'forgot-password' | 'reset-password'>('landing-page');
+  const [currentView, setCurrentView] = useState<'login' | 'register' | 'dashboard' | 'profile' | 'add-person' | 'edit-person' | 'person-detail' | 'notifications' | 'admin' | 'contact-support' | 'landing-page' | 'terms-of-service' | 'privacy-policy' | 'forgot-password' | 'reset-password' | 'about'>('landing-page');
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [viewHistory, setViewHistory] = useState<string[]>(['landing-page']);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -574,6 +575,15 @@ function AppContent() {
     );
   }
 
+  if (currentView === 'about') {
+    return (
+      <About
+        onBack={() => setCurrentView('dashboard')}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   return (
     <Dashboard
       persons={persons}
@@ -590,7 +600,7 @@ function AppContent() {
       onViewNotifications={() => setCurrentView('notifications')}
       onViewAdmin={() => setCurrentView('admin')}
       onViewContactSupport={() => setCurrentView('contact-support')}
-      onViewAbout={() => setCurrentView('landing-page')}
+      onViewAbout={() => setCurrentView('about')}
       onViewTermsOfService={() => setCurrentView('terms-of-service')}
       onViewPrivacyPolicy={() => setCurrentView('privacy-policy')}
       onLogout={handleLogout}

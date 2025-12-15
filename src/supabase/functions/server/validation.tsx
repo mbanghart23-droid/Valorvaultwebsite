@@ -212,8 +212,18 @@ export function validatePersonData(data: any): { valid: boolean; errors: string[
     errors.push('Invalid branch of service');
   }
   
-  if (data.country && sanitizeText(data.country).length > 100) {
-    errors.push('Country name is too long (max 100 characters)');
+  // Validate country array if provided
+  if (data.country) {
+    if (!Array.isArray(data.country)) {
+      errors.push('Country must be an array');
+    } else {
+      for (const c of data.country) {
+        if (typeof c !== 'string' || sanitizeText(c).length > 100) {
+          errors.push('Each country must be a string and max 100 characters');
+          break;
+        }
+      }
+    }
   }
   
   // Validate rank array if provided
@@ -319,10 +329,16 @@ export function sanitizePersonData(data: any): any {
     notes: sanitizeText(data.notes || ''),
     placeOfBirth: sanitizeText(data.placeOfBirth || ''),
     branch: data.branch || '',
-    country: sanitizeText(data.country || ''),
     dateOfBirth: data.dateOfBirth || '',
     dateOfDeath: data.dateOfDeath || '',
   };
+  
+  // Sanitize country array
+  if (data.country && Array.isArray(data.country)) {
+    sanitized.country = data.country.map((c: string) => sanitizeText(c)).filter((c: string) => c.length > 0);
+  } else {
+    sanitized.country = [];
+  }
   
   // Sanitize rank array
   if (data.rank && Array.isArray(data.rank)) {
