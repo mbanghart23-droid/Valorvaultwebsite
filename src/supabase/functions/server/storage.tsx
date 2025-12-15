@@ -64,14 +64,31 @@ export async function getSignedUrl(filePath: string): Promise<string | null> {
       .from(BUCKET_NAME)
       .createSignedUrl(filePath, 3600); // 1 hour expiry
     
-    if (error || !data) {
-      console.error('Error creating signed URL:', error);
+    if (error) {
+      // Don't log 404 errors - these are expected when files have been deleted
+      if (error.message?.includes('not found') || error.statusCode === '404') {
+        return null;
+      }
+      console.error(`Error creating signed URL for ${filePath}:`, error);
+      return null;
+    }
+    
+    if (!data) {
       return null;
     }
     
     return data.signedUrl;
   } catch (error) {
-    console.error('Error in getSignedUrl:', error);
+    // Only log unexpected errors, not missing file errors (404/400)
+    const isNotFoundError = 
+      error?.statusCode === '404' || 
+      error?.status === 400 || 
+      error?.message?.includes('not found') ||
+      error?.message?.includes('Object not found');
+    
+    if (!isNotFoundError) {
+      console.error('Unexpected error in getSignedUrl:', error);
+    }
     return null;
   }
 }

@@ -449,6 +449,141 @@ app.put("/make-server-8db4ea83/profile", async (c) => {
   }
 });
 
+// Change password
+app.put("/make-server-8db4ea83/profile/change-password", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+    
+    if (authError || !user) {
+      console.log('Change password authorization error:', authError);
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { currentPassword, newPassword } = await c.req.json();
+
+    if (!currentPassword || !newPassword) {
+      return c.json({ error: 'Current password and new password are required' }, 400);
+    }
+
+    // Validate new password strength
+    if (!isValidPassword(newPassword)) {
+      return c.json({ error: getPasswordError(newPassword) }, 400);
+    }
+
+    // Verify current password by attempting to sign in
+    const supabaseClient = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+    
+    const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+      email: user.email!,
+      password: currentPassword
+    });
+
+    if (signInError) {
+      console.log('Current password verification failed:', signInError);
+      return c.json({ error: 'Current password is incorrect' }, 401);
+    }
+
+    // Update password using admin API
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      user.id,
+      { password: newPassword }
+    );
+
+    if (updateError) {
+      console.log('Password update error:', updateError);
+      return c.json({ error: 'Failed to update password' }, 500);
+    }
+
+    return c.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.log('Change password error:', error);
+    return c.json({ error: 'Failed to change password' }, 500);
+  }
+});
+
+// Delete account
+app.delete("/make-server-8db4ea83/profile/delete-account", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+    
+    if (authError || !user) {
+      console.log('Delete account authorization error:', authError);
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { password } = await c.req.json();
+
+    if (!password) {
+      return c.json({ error: 'Password is required to delete account' }, 400);
+    }
+
+    // Verify password by attempting to sign in
+    const supabaseClient = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+    
+    const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+      email: user.email!,
+      password: password
+    });
+
+    if (signInError) {
+      console.log('Password verification failed for account deletion:', signInError);
+      return c.json({ error: 'Password is incorrect' }, 401);
+    }
+
+    const userId = user.id;
+
+    // Delete all user's persons and associated data
+    const personsData = await kv.getByPrefix(`person:${userId}:`);
+    for (const person of personsData) {
+      // Delete person's images from storage
+      if (person.profileImageFile) {
+        await deleteImage(person.profileImageFile);
+      }
+      
+      if (person.imageFiles && person.imageFiles.length > 0) {
+        for (const filePath of person.imageFiles) {
+          await deleteImage(filePath);
+        }
+      }
+      
+      // Delete person record
+      await kv.del(`person:${userId}:${person.id}`);
+    }
+
+    // Delete all contact requests involving this user
+    const allContactRequests = await kv.getByPrefix('contact-request:');
+    for (const request of allContactRequests) {
+      if (request.fromUserId === userId || request.toUserId === userId) {
+        await kv.del(`contact-request:${request.id}`);
+      }
+    }
+
+    // Delete user profile
+    await kv.del(`user:${userId}`);
+
+    // Delete from Supabase Auth
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    
+    if (deleteError) {
+      console.log('Error deleting user from auth:', deleteError);
+      return c.json({ error: 'Failed to delete account from authentication system' }, 500);
+    }
+
+    return c.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.log('Delete account error:', error);
+    return c.json({ error: 'Failed to delete account' }, 500);
+  }
+});
+
 // ============== PERSON ENDPOINTS ==============
 
 // Get all persons for current user
@@ -684,15 +819,15 @@ app.put("/make-server-8db4ea83/persons/:id", async (c) => {
   }
 });
 
-// Delete person
-app.delete("/make-server-8db4ea83/persons/:id", async (c) => {
+// Delete person (protected route)
+app.delete('/make-server-8db4ea83/persons/:id', async (c) => {
   try {
-    const userId = await verifyToken(c.req.header('Authorization'));
-    
-    if (!userId) {
+    const result = await verifyActiveUser(c.req.header('Authorization'));
+    if (!result) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
     
+    const userId = result.userId;
     const personId = c.req.param('id');
     const person = await kv.get(`person:${userId}:${personId}`);
     
@@ -700,12 +835,12 @@ app.delete("/make-server-8db4ea83/persons/:id", async (c) => {
       return c.json({ error: 'Person not found' }, 404);
     }
     
-    // Delete profile image from storage
+    // Delete profile image from storage if it exists
     if (person.profileImageFile) {
       await deleteImage(person.profileImageFile);
     }
     
-    // Delete images from storage
+    // Delete all images from storage
     if (person.imageFiles && person.imageFiles.length > 0) {
       for (const filePath of person.imageFiles) {
         await deleteImage(filePath);

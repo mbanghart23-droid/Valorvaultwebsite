@@ -15,13 +15,13 @@ export function MedalForm({ medal, onSubmit, onCancel }: MedalFormProps) {
     branch: medal?.branch || '',
     era: medal?.era || '',
     dateAwarded: medal?.dateAwarded || '',
-    recipient: medal?.recipient || '',
-    condition: medal?.condition || 'Good',
+    condition: medal?.condition || '',
     description: medal?.description || '',
+    inCollection: medal?.inCollection ?? true,
     imageUrl: medal?.imageUrl || '',
     acquisitionDate: medal?.acquisitionDate || '',
     acquisitionSource: medal?.acquisitionSource || '',
-    estimatedValue: medal?.estimatedValue || '',
+    acquisitionPrice: medal?.acquisitionPrice || '',
     serialNumber: medal?.serialNumber || '',
     category: medal?.category || ''
   });
@@ -168,21 +168,6 @@ export function MedalForm({ medal, onSubmit, onCancel }: MedalFormProps) {
               <h3 className="text-white mb-4">Award Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="recipient" className="block text-slate-300 mb-2">
-                    Recipient Name
-                  </label>
-                  <input
-                    id="recipient"
-                    name="recipient"
-                    type="text"
-                    value={formData.recipient}
-                    onChange={handleChange}
-                    placeholder="e.g., Sgt. John Smith"
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="dateAwarded" className="block text-slate-300 mb-2">
                     Date Awarded
                   </label>
@@ -246,14 +231,14 @@ export function MedalForm({ medal, onSubmit, onCancel }: MedalFormProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="estimatedValue" className="block text-slate-300 mb-2">
+                  <label htmlFor="acquisitionPrice" className="block text-slate-300 mb-2">
                     Acquisition Price
                   </label>
                   <input
-                    id="estimatedValue"
-                    name="estimatedValue"
+                    id="acquisitionPrice"
+                    name="acquisitionPrice"
                     type="text"
-                    value={formData.estimatedValue}
+                    value={formData.acquisitionPrice}
                     onChange={handleChange}
                     placeholder="e.g., $500"
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"

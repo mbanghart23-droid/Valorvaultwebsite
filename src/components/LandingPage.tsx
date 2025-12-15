@@ -42,13 +42,13 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
               </a>
               <button
                 onClick={onSignIn || onBack}
-                className="px-5 py-2 text-black hover:text-neutral-600 transition-colors"
+                className="px-5 py-2 text-black hover:text-neutral-600 active:text-neutral-700 transition-colors"
               >
                 Sign In
               </button>
               <button
                 onClick={onGetStarted || onBack}
-                className="px-6 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white rounded-lg transition-colors"
               >
                 Get Started
               </button>
@@ -95,14 +95,14 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={onGetStarted || onBack}
-                className="flex items-center gap-2 px-8 py-4 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-8 py-4 bg-white text-black hover:bg-neutral-100 active:bg-neutral-200 rounded-lg transition-colors"
               >
                 Start Your Collection
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button
                 onClick={onSignIn || onBack}
-                className="px-8 py-4 border-2 border-white text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="px-8 py-4 border-2 border-white text-white hover:bg-white/10 active:bg-white/20 rounded-lg transition-colors"
               >
                 Sign In
               </button>
@@ -309,7 +309,7 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
           </p>
           <button
             onClick={onGetStarted || onBack}
-            className="px-8 py-4 bg-white text-black hover:bg-neutral-100 rounded-lg transition-colors inline-flex items-center gap-2"
+            className="px-8 py-4 bg-white text-black hover:bg-neutral-100 active:bg-neutral-200 rounded-lg transition-colors inline-flex items-center gap-2"
           >
             Create Free Account
             <ArrowRight className="w-5 h-5" />

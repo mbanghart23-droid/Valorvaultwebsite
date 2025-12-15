@@ -34,7 +34,7 @@ export interface PersonMedal {
   inCollection: boolean;
   acquisitionDate?: string;
   acquisitionSource?: string;
-  estimatedValue?: string;
+  acquisitionPrice?: string;
   serialNumber?: string;
   isNamed?: boolean;
   medalNumber?: string;
@@ -275,6 +275,31 @@ function AppContent() {
     }
   };
 
+  const handleChangePassword = async (currentPassword: string, newPassword: string) => {
+    if (!accessToken) return;
+
+    const result = await profileApi.changePassword(currentPassword, newPassword, accessToken);
+    if (result.success) {
+      toast.success('Password changed successfully!');
+    } else {
+      toast.error(result.error || 'Failed to change password');
+      throw new Error(result.error || 'Failed to change password');
+    }
+  };
+
+  const handleDeleteAccount = async (password: string) => {
+    if (!accessToken) return;
+
+    const result = await profileApi.deleteAccount(password, accessToken);
+    if (result.success) {
+      toast.success('Account deleted successfully');
+      await handleLogout();
+    } else {
+      toast.error(result.error || 'Failed to delete account');
+      throw new Error(result.error || 'Failed to delete account');
+    }
+  };
+
   const handleSendContactRequest = async (personId: string, message: string) => {
     if (!accessToken) return;
 
@@ -467,6 +492,8 @@ function AppContent() {
         onUpdate={handleUpdateProfile}
         onBack={() => setCurrentView('dashboard')}
         onLogout={handleLogout}
+        onChangePassword={handleChangePassword}
+        onDeleteAccount={handleDeleteAccount}
       />
     );
   }

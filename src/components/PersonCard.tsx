@@ -1,5 +1,6 @@
 import { Person } from '../App';
 import { Eye, Edit2, Trash2, MapPin, Calendar, Award, CheckCircle, XCircle, User } from 'lucide-react';
+import { useState } from 'react';
 
 interface PersonCardProps {
   person: Person;
@@ -10,6 +11,7 @@ interface PersonCardProps {
 }
 
 export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: PersonCardProps) {
+  const [imageError, setImageError] = useState(false);
   const medalsInCollection = person.medals.filter(m => m.inCollection).length;
   const totalMedals = person.medals.length;
 
@@ -19,11 +21,12 @@ export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: P
     }`}>
       <div className="p-6">
         <div className="flex items-start gap-4 mb-4">
-          {person.profileImage ? (
+          {person.profileImage && !imageError ? (
             <img
               src={person.profileImage}
               alt={person.name}
               className="w-16 h-16 rounded-full object-cover border-2 border-neutral-200"
+              onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center border-2 border-neutral-200">
@@ -89,14 +92,14 @@ export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: P
         <div className="flex gap-2">
           <button
             onClick={onView}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-black rounded-lg transition-colors"
           >
             <Eye className="w-4 h-4" />
             View
           </button>
           <button
             onClick={onEdit}
-            className="flex items-center justify-center px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-black rounded-lg transition-colors"
           >
             <Edit2 className="w-4 h-4" />
           </button>
@@ -107,7 +110,7 @@ export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: P
                 onDelete();
               }
             }}
-            className="flex items-center justify-center px-4 py-2 bg-neutral-100 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-neutral-100 hover:bg-red-50 active:bg-red-100 text-red-600 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>

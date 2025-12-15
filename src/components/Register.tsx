@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Shield, Check } from 'lucide-react';
 import { getActiveTiers, MembershipTier } from '../utils/membershipTiers';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface RegisterProps {
   onRegister: (name: string, email: string, password: string, membershipTier: string) => Promise<void>;
@@ -17,6 +18,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   const [honeypot, setHoneypot] = useState(''); // Spam trap
   const [passwordError, setPasswordError] = useState('');
   const [membershipTiers, setMembershipTiers] = useState<MembershipTier[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Generate new CAPTCHA on mount
@@ -76,7 +78,8 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       setPasswordError('Passwords do not match');
       return;
     }
-    onRegister(name, email, password, membershipTiers[0].id);
+    setIsLoading(true);
+    onRegister(name, email, password, membershipTiers[0].id).finally(() => setIsLoading(false));
   };
 
   return (
@@ -229,9 +232,17 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
 
             <button
               type="submit"
-              className="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-lg transition-colors"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 active:bg-neutral-900 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white py-3 rounded-lg transition-colors"
             >
-              Create Account
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" className="text-white" />
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                'Create Account'
+              )}
             </button>
           </form>
 

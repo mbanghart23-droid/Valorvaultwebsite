@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Shield, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface LoginProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -165,10 +166,17 @@ export function Login({ onLogin, onSwitchToRegister, onForgotPassword }: LoginPr
 
             <button
               type="submit"
-              className="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 active:bg-neutral-900 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white py-3 rounded-lg transition-colors"
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" className="text-white" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

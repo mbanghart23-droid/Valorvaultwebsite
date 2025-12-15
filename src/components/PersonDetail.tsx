@@ -288,16 +288,10 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                                 <span className="text-black">{medal.condition}</span>
                               </div>
                             )}
-                            {medal.estimatedValue && (
+                            {medal.acquisitionPrice && (
                               <div className="flex items-center gap-2">
                                 <DollarSign className="w-4 h-4 text-neutral-600" />
-                                <span className="text-black">{medal.estimatedValue}</span>
-                              </div>
-                            )}
-                            {medal.acquisitionSource && (
-                              <div className="flex items-center gap-2">
-                                <Package className="w-4 h-4 text-neutral-600" />
-                                <span className="text-black">{medal.acquisitionSource}</span>
+                                <span className="text-black">{medal.acquisitionPrice}</span>
                               </div>
                             )}
                             {medal.serialNumber && (

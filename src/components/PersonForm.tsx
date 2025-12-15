@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Person, PersonMedal } from '../App';
 import { ArrowLeft, Save, Plus, Edit, Trash2, Award, X, Upload, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { ComboBox } from './ComboBox';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface PersonFormProps {
   person?: Person;
@@ -176,7 +177,7 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
       description: medalFormData.description,
       acquisitionDate: medalFormData.acquisitionDate,
       acquisitionSource: medalFormData.acquisitionSource,
-      estimatedValue: medalFormData.estimatedValue,
+      acquisitionPrice: medalFormData.acquisitionPrice,
       serialNumber: medalFormData.serialNumber,
       medalNumber: medalFormData.medalNumber,
       isNamed: medalFormData.isNamed,
@@ -219,15 +220,18 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    if (person) {
-      onSubmit({ ...person, ...formData });
-    } else {
-      onSubmit(formData);
+    try {
+      if (person) {
+        await onSubmit({ ...person, ...formData });
+      } else {
+        await onSubmit(formData);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   // Prevent Enter key from submitting the form (except on buttons)
@@ -974,12 +978,12 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
 
                         <div>
                           <label className="block text-neutral-700 mb-2">
-                            Estimated Value
+                            Acquisition Price
                           </label>
                           <input
-                            name="estimatedValue"
+                            name="acquisitionPrice"
                             type="text"
-                            value={medalFormData.estimatedValue || ''}
+                            value={medalFormData.acquisitionPrice || ''}
                             onChange={handleMedalChange}
                             className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                             placeholder="e.g., $450"
@@ -1081,15 +1085,26 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
             <div className="flex gap-4 pt-6 border-t border-neutral-200">
               <button
                 type="submit"
-                className="flex items-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 active:bg-neutral-900 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
               >
-                <Save className="w-5 h-5" />
-                {person ? 'Update Service Member' : 'Add Service Member'}
+                {isSubmitting ? (
+                  <>
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    {person ? 'Update Service Member' : 'Add Service Member'}
+                  </>
+                )}
               </button>
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg transition-colors"
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 disabled:bg-neutral-50 disabled:cursor-not-allowed text-black rounded-lg transition-colors"
               >
                 Cancel
               </button>

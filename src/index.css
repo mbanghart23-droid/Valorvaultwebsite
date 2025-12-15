@@ -1678,6 +1678,10 @@
     opacity: 0;
   }
 
+  .opacity-25 {
+    opacity: .25;
+  }
+
   .opacity-30 {
     opacity: .3;
   }
@@ -1966,12 +1970,50 @@
     outline-style: none;
   }
 
+  .active\:bg-neutral-200:active {
+    background-color: var(--color-neutral-200);
+  }
+
+  .active\:bg-neutral-300:active {
+    background-color: var(--color-neutral-300);
+  }
+
+  .active\:bg-neutral-900:active {
+    background-color: var(--color-neutral-900);
+  }
+
+  .active\:bg-red-100:active {
+    background-color: var(--color-red-100);
+  }
+
+  .active\:bg-white\/20:active {
+    background-color: #fff3;
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .active\:bg-white\/20:active {
+      background-color: color-mix(in oklab, var(--color-white) 20%, transparent);
+    }
+  }
+
+  .active\:text-neutral-700:active {
+    color: var(--color-neutral-700);
+  }
+
   .disabled\:cursor-not-allowed:disabled {
     cursor: not-allowed;
   }
 
+  .disabled\:bg-neutral-50:disabled {
+    background-color: var(--color-neutral-50);
+  }
+
   .disabled\:bg-neutral-200:disabled {
     background-color: var(--color-neutral-200);
+  }
+
+  .disabled\:bg-neutral-300:disabled {
+    background-color: var(--color-neutral-300);
   }
 
   .disabled\:text-neutral-400:disabled {
