@@ -1,7 +1,7 @@
-import { User } from '../App';
+import React from 'react';
 import { ArrowLeft, LogOut, Shield, CheckCircle, XCircle, Trash2, AlertTriangle, Database, Edit2, GitMerge } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { fetchDropdownStats } from '../utils/api/admin';
+import { fetchDropdownStats, renameDropdownValue, mergeDropdownValues, deleteDropdownValue } from '../utils/api/admin';
 
 interface AdminProps {
   users: User[];
@@ -340,10 +340,20 @@ export function Admin({
                                 Cancel
                               </button>
                               <button
-                                onClick={() => {
-                                  alert(`✓ Renamed "${item.value}" to "${newValueName}" across ${item.usageCount} records`);
-                                  setEditingValue(null);
-                                  setNewValueName('');
+                                onClick={async () => {
+                                  if (newValueName && newValueName !== item.value) {
+                                    const result = await renameDropdownValue(selectedField, item.value, newValueName, accessToken);
+                                    if (result.success) {
+                                      // Reload stats to show updated values
+                                      const stats = await fetchDropdownStats(accessToken);
+                                      setDropdownData(stats);
+                                      alert(`✓ Renamed "${item.value}" to "${newValueName}" across ${result.updatedCount} records`);
+                                      setEditingValue(null);
+                                      setNewValueName('');
+                                    } else {
+                                      alert(`❌ Error: ${result.error}`);
+                                    }
+                                  }
                                 }}
                                 disabled={!newValueName || newValueName === item.value}
                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -400,11 +410,19 @@ export function Admin({
                                 Cancel
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   if (mergeTargetValue) {
-                                    alert(`✓ Merged "${item.value}" (${item.usageCount} records) into "${mergeTargetValue}"`);
-                                    setMergingValue(null);
-                                    setMergeTargetValue('');
+                                    const result = await mergeDropdownValues(selectedField, item.value, mergeTargetValue, accessToken);
+                                    if (result.success) {
+                                      // Reload stats to show updated values
+                                      const stats = await fetchDropdownStats(accessToken);
+                                      setDropdownData(stats);
+                                      alert(`✓ Merged "${item.value}" (${result.updatedCount} records) into "${mergeTargetValue}"`);
+                                      setMergingValue(null);
+                                      setMergeTargetValue('');
+                                    } else {
+                                      alert(`❌ Error: ${result.error}`);
+                                    }
                                   }
                                 }}
                                 disabled={!mergeTargetValue}
@@ -451,9 +469,17 @@ export function Admin({
                                   Merge
                                 </button>
                                 <button
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (confirm(`⚠️ Delete "${item.value}"?\n\nThis will remove this value from ${item.usageCount} record${item.usageCount !== 1 ? 's' : ''}.\n\nThis action cannot be undone.`)) {
-                                      alert(`✓ Deleted "${item.value}" from ${item.usageCount} record${item.usageCount !== 1 ? 's' : ''}`);
+                                      const result = await deleteDropdownValue(selectedField, item.value, accessToken);
+                                      if (result.success) {
+                                        // Reload stats to show updated values
+                                        const stats = await fetchDropdownStats(accessToken);
+                                        setDropdownData(stats);
+                                        alert(`✓ Deleted "${item.value}" from ${result.updatedCount} record${result.updatedCount !== 1 ? 's' : ''}`);
+                                      } else {
+                                        alert(`❌ Error: ${result.error}`);
+                                      }
                                     }
                                   }}
                                   className="p-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors"

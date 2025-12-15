@@ -1284,6 +1284,328 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
   }
 });
 
+// Rename a dropdown value across all records (admin only)
+app.post("/make-server-8db4ea83/admin/dropdown-rename", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const { field, oldValue, newValue } = await c.req.json();
+    
+    if (!field || !oldValue || !newValue) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+    
+    // Get all persons from all users
+    const allPersons = await kv.getByPrefix('person:');
+    let updatedCount = 0;
+    
+    // Update each person's records
+    for (const person of allPersons) {
+      let updated = false;
+      
+      // Handle person-level array fields
+      if (field === 'era' && person.era && Array.isArray(person.era)) {
+        const index = person.era.indexOf(oldValue);
+        if (index !== -1) {
+          person.era[index] = newValue;
+          updated = true;
+        }
+      }
+      
+      if (field === 'country' && person.country && Array.isArray(person.country)) {
+        const index = person.country.indexOf(oldValue);
+        if (index !== -1) {
+          person.country[index] = newValue;
+          updated = true;
+        }
+      }
+      
+      if (field === 'rank' && person.rank && Array.isArray(person.rank)) {
+        const index = person.rank.indexOf(oldValue);
+        if (index !== -1) {
+          person.rank[index] = newValue;
+          updated = true;
+        }
+      }
+      
+      if (field === 'unit' && person.unit && Array.isArray(person.unit)) {
+        const index = person.unit.indexOf(oldValue);
+        if (index !== -1) {
+          person.unit[index] = newValue;
+          updated = true;
+        }
+      }
+      
+      // Handle person-level string field
+      if (field === 'branch' && person.branch === oldValue) {
+        person.branch = newValue;
+        updated = true;
+      }
+      
+      // Handle medal-level fields
+      if (person.medals && Array.isArray(person.medals)) {
+        for (const medal of person.medals) {
+          if (field === 'category' && medal.category === oldValue) {
+            medal.category = newValue;
+            updated = true;
+          }
+          
+          if (field === 'clasp' && medal.clasps && Array.isArray(medal.clasps)) {
+            const index = medal.clasps.indexOf(oldValue);
+            if (index !== -1) {
+              medal.clasps[index] = newValue;
+              updated = true;
+            }
+          }
+        }
+      }
+      
+      // Save if updated
+      if (updated) {
+        await kv.set(`person:${person.id}`, person);
+        updatedCount++;
+      }
+    }
+    
+    console.log(`Renamed "${oldValue}" to "${newValue}" in field "${field}" across ${updatedCount} records`);
+    return c.json({ success: true, updatedCount });
+  } catch (error) {
+    console.log('Rename dropdown value error:', error);
+    return c.json({ error: 'Failed to rename dropdown value' }, 500);
+  }
+});
+
+// Merge dropdown values (admin only)
+app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const { field, sourceValue, targetValue } = await c.req.json();
+    
+    if (!field || !sourceValue || !targetValue) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+    
+    // Get all persons from all users
+    const allPersons = await kv.getByPrefix('person:');
+    let updatedCount = 0;
+    
+    // Update each person's records
+    for (const person of allPersons) {
+      let updated = false;
+      
+      // Handle person-level array fields
+      if (field === 'era' && person.era && Array.isArray(person.era)) {
+        const index = person.era.indexOf(sourceValue);
+        if (index !== -1) {
+          // Replace with target value if not already present
+          if (!person.era.includes(targetValue)) {
+            person.era[index] = targetValue;
+          } else {
+            // Remove duplicate if target already exists
+            person.era.splice(index, 1);
+          }
+          updated = true;
+        }
+      }
+      
+      if (field === 'country' && person.country && Array.isArray(person.country)) {
+        const index = person.country.indexOf(sourceValue);
+        if (index !== -1) {
+          if (!person.country.includes(targetValue)) {
+            person.country[index] = targetValue;
+          } else {
+            person.country.splice(index, 1);
+          }
+          updated = true;
+        }
+      }
+      
+      if (field === 'rank' && person.rank && Array.isArray(person.rank)) {
+        const index = person.rank.indexOf(sourceValue);
+        if (index !== -1) {
+          if (!person.rank.includes(targetValue)) {
+            person.rank[index] = targetValue;
+          } else {
+            person.rank.splice(index, 1);
+          }
+          updated = true;
+        }
+      }
+      
+      if (field === 'unit' && person.unit && Array.isArray(person.unit)) {
+        const index = person.unit.indexOf(sourceValue);
+        if (index !== -1) {
+          if (!person.unit.includes(targetValue)) {
+            person.unit[index] = targetValue;
+          } else {
+            person.unit.splice(index, 1);
+          }
+          updated = true;
+        }
+      }
+      
+      // Handle person-level string field
+      if (field === 'branch' && person.branch === sourceValue) {
+        person.branch = targetValue;
+        updated = true;
+      }
+      
+      // Handle medal-level fields
+      if (person.medals && Array.isArray(person.medals)) {
+        for (const medal of person.medals) {
+          if (field === 'category' && medal.category === sourceValue) {
+            medal.category = targetValue;
+            updated = true;
+          }
+          
+          if (field === 'clasp' && medal.clasps && Array.isArray(medal.clasps)) {
+            const index = medal.clasps.indexOf(sourceValue);
+            if (index !== -1) {
+              if (!medal.clasps.includes(targetValue)) {
+                medal.clasps[index] = targetValue;
+              } else {
+                medal.clasps.splice(index, 1);
+              }
+              updated = true;
+            }
+          }
+        }
+      }
+      
+      // Save if updated
+      if (updated) {
+        await kv.set(`person:${person.id}`, person);
+        updatedCount++;
+      }
+    }
+    
+    console.log(`Merged "${sourceValue}" into "${targetValue}" in field "${field}" across ${updatedCount} records`);
+    return c.json({ success: true, updatedCount });
+  } catch (error) {
+    console.log('Merge dropdown value error:', error);
+    return c.json({ error: 'Failed to merge dropdown value' }, 500);
+  }
+});
+
+// Delete a dropdown value from all records (admin only)
+app.post("/make-server-8db4ea83/admin/dropdown-delete", async (c) => {
+  try {
+    const userId = await verifyToken(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    const adminUser = await kv.get(`user:${userId}`);
+    if (!adminUser || !adminUser.isAdmin) {
+      return c.json({ error: 'Forbidden - Admin access required' }, 403);
+    }
+    
+    const { field, value } = await c.req.json();
+    
+    if (!field || !value) {
+      return c.json({ error: 'Missing required fields' }, 400);
+    }
+    
+    // Get all persons from all users
+    const allPersons = await kv.getByPrefix('person:');
+    let updatedCount = 0;
+    
+    // Update each person's records
+    for (const person of allPersons) {
+      let updated = false;
+      
+      // Handle person-level array fields
+      if (field === 'era' && person.era && Array.isArray(person.era)) {
+        const index = person.era.indexOf(value);
+        if (index !== -1) {
+          person.era.splice(index, 1);
+          updated = true;
+        }
+      }
+      
+      if (field === 'country' && person.country && Array.isArray(person.country)) {
+        const index = person.country.indexOf(value);
+        if (index !== -1) {
+          person.country.splice(index, 1);
+          updated = true;
+        }
+      }
+      
+      if (field === 'rank' && person.rank && Array.isArray(person.rank)) {
+        const index = person.rank.indexOf(value);
+        if (index !== -1) {
+          person.rank.splice(index, 1);
+          updated = true;
+        }
+      }
+      
+      if (field === 'unit' && person.unit && Array.isArray(person.unit)) {
+        const index = person.unit.indexOf(value);
+        if (index !== -1) {
+          person.unit.splice(index, 1);
+          updated = true;
+        }
+      }
+      
+      // Handle person-level string field
+      if (field === 'branch' && person.branch === value) {
+        person.branch = '';
+        updated = true;
+      }
+      
+      // Handle medal-level fields
+      if (person.medals && Array.isArray(person.medals)) {
+        for (const medal of person.medals) {
+          if (field === 'category' && medal.category === value) {
+            medal.category = '';
+            updated = true;
+          }
+          
+          if (field === 'clasp' && medal.clasps && Array.isArray(medal.clasps)) {
+            const index = medal.clasps.indexOf(value);
+            if (index !== -1) {
+              medal.clasps.splice(index, 1);
+              updated = true;
+            }
+          }
+        }
+      }
+      
+      // Save if updated
+      if (updated) {
+        await kv.set(`person:${person.id}`, person);
+        updatedCount++;
+      }
+    }
+    
+    console.log(`Deleted "${value}" from field "${field}" across ${updatedCount} records`);
+    return c.json({ success: true, updatedCount });
+  } catch (error) {
+    console.log('Delete dropdown value error:', error);
+    return c.json({ error: 'Failed to delete dropdown value' }, 500);
+  }
+});
+
 // Helper to import createClient in Deno environment
 async function createClient(url: string, key: string) {
   const { createClient: create } = await import('npm:@supabase/supabase-js@2');

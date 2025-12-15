@@ -85,3 +85,80 @@ export async function fetchDropdownStats(accessToken: string): Promise<Record<st
     return {};
   }
 }
+
+export async function renameDropdownValue(
+  field: string, 
+  oldValue: string, 
+  newValue: string, 
+  accessToken: string
+): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
+  try {
+    const response = await apiCall('/admin/dropdown-rename', {
+      method: 'POST',
+      body: JSON.stringify({ field, oldValue, newValue }),
+    }, accessToken);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Rename dropdown value error:', error);
+      return { success: false, error: error.error || 'Failed to rename value' };
+    }
+    
+    const data = await response.json();
+    return { success: true, updatedCount: data.updatedCount };
+  } catch (error) {
+    console.error('Rename dropdown value error:', error);
+    return { success: false, error: 'Failed to rename value' };
+  }
+}
+
+export async function mergeDropdownValues(
+  field: string, 
+  sourceValue: string, 
+  targetValue: string, 
+  accessToken: string
+): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
+  try {
+    const response = await apiCall('/admin/dropdown-merge', {
+      method: 'POST',
+      body: JSON.stringify({ field, sourceValue, targetValue }),
+    }, accessToken);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Merge dropdown values error:', error);
+      return { success: false, error: error.error || 'Failed to merge values' };
+    }
+    
+    const data = await response.json();
+    return { success: true, updatedCount: data.updatedCount };
+  } catch (error) {
+    console.error('Merge dropdown values error:', error);
+    return { success: false, error: 'Failed to merge values' };
+  }
+}
+
+export async function deleteDropdownValue(
+  field: string, 
+  value: string, 
+  accessToken: string
+): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
+  try {
+    const response = await apiCall('/admin/dropdown-delete', {
+      method: 'POST',
+      body: JSON.stringify({ field, value }),
+    }, accessToken);
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Delete dropdown value error:', error);
+      return { success: false, error: error.error || 'Failed to delete value' };
+    }
+    
+    const data = await response.json();
+    return { success: true, updatedCount: data.updatedCount };
+  } catch (error) {
+    console.error('Delete dropdown value error:', error);
+    return { success: false, error: 'Failed to delete value' };
+  }
+}
