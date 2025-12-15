@@ -4,7 +4,7 @@ import { logger } from 'npm:hono/logger';
 import * as kv from './kv_store.tsx';
 import { supabaseAdmin, verifyToken, verifyActiveUser, createClient } from './auth.tsx';
 import { uploadImage, deleteImage, getSignedUrl } from './storage.tsx';
-import { sendEmail, registrationConfirmationEmail, newRegistrationEmail, accountActivatedEmail, passwordResetEmail, passwordResetConfirmationEmail, contactRequestEmail, requestApprovedEmail, requestDeclinedEmail, getAdminEmails } from './email.tsx';
+import { sendEmail, registrationConfirmationEmail, newRegistrationEmail, accountActivatedEmail, passwordResetEmail, passwordResetConfirmationEmail, contactRequestEmail, requestApprovedEmail, requestDeclinedEmail, getAdminEmails, contactSupportEmail } from './email.tsx';
 import { isValidEmail, isValidPassword, getPasswordError, validateProfileData, sanitizeProfileData, validatePersonData, sanitizePersonData, validateContactMessage } from './validation.tsx';
 import { checkRateLimit, RATE_LIMITS, formatResetTime } from './ratelimit.tsx';
 
@@ -1030,6 +1030,90 @@ app.put("/make-server-8db4ea83/contact-requests/:id/decline", async (c) => {
   } catch (error) {
     console.log('Decline request error:', error);
     return c.json({ error: 'Failed to decline request' }, 500);
+  }
+});
+
+// ============== CONTACT SUPPORT ENDPOINT ==============
+
+// Submit contact support message (protected route)
+app.post("/make-server-8db4ea83/contact-support", async (c) => {
+  try {
+    const userId = await verifyActiveUser(c.req.header('Authorization'));
+    
+    if (!userId) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Rate limiting
+    const rateLimit = await checkRateLimit(c.req.raw, RATE_LIMITS.CONTACT_REQUEST);
+    if (!rateLimit.allowed) {
+      return c.json({ 
+        error: `Too many support requests. Please try again in ${formatResetTime(rateLimit.resetAt)}` 
+      }, 429);
+    }
+    
+    const { subject, message } = await c.req.json();
+    
+    // Validate input
+    if (!subject || !message) {
+      return c.json({ error: 'Subject and message are required' }, 400);
+    }
+    
+    if (message.length < 10) {
+      return c.json({ error: 'Message must be at least 10 characters long' }, 400);
+    }
+    
+    if (message.length > 5000) {
+      return c.json({ error: 'Message must be less than 5000 characters' }, 400);
+    }
+    
+    // Get user info
+    const user = await kv.get(`user:${userId}`);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    
+    // Get admin emails
+    const adminEmails = await getAdminEmails(kv);
+    
+    if (adminEmails.length === 0) {
+      console.log('Warning: No admin emails found for contact support notification');
+      // Still return success to user, but log the issue
+      return c.json({ 
+        success: true,
+        message: 'Your support request has been received. We will respond as soon as possible.' 
+      });
+    }
+    
+    // Map subject codes to readable names
+    const subjectNames: { [key: string]: string } = {
+      'account': 'Account Issues',
+      'technical': 'Technical Problems',
+      'feature': 'Feature Request',
+      'data': 'Data/Collection Issues',
+      'other': 'Other'
+    };
+    
+    const readableSubject = subjectNames[subject] || subject;
+    
+    // Send email to all admins
+    for (const adminEmail of adminEmails) {
+      await sendEmail({
+        to: adminEmail,
+        subject: `[Support Request] ${readableSubject} - from ${user.name}`,
+        html: contactSupportEmail(user.name, user.email, readableSubject, message)
+      });
+    }
+    
+    console.log(`Contact support request sent from user ${userId} (${user.email})`);
+    
+    return c.json({ 
+      success: true,
+      message: 'Your support request has been sent to our team. We will respond via email as soon as possible.' 
+    });
+  } catch (error) {
+    console.log('Contact support error:', error);
+    return c.json({ error: 'Failed to send support request' }, 500);
   }
 });
 

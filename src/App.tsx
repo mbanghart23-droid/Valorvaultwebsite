@@ -411,6 +411,7 @@ function AppContent() {
         onViewPrivacyPolicy={() => setCurrentView('privacy-policy')}
         onGetStarted={() => setCurrentView('register')}
         onSignIn={() => setCurrentView('login')}
+        onContactSupport={() => setCurrentView('login')}
       />
     );
   }
@@ -540,6 +541,7 @@ function AppContent() {
   if (currentView === 'contact-support') {
     return (
       <ContactSupport
+        accessToken={accessToken || ''}
         onBack={() => setCurrentView('dashboard')}
         onLogout={handleLogout}
       />
@@ -553,6 +555,7 @@ function AppContent() {
         onLogout={handleLogout}
         onViewTermsOfService={() => setCurrentView('terms-of-service')}
         onViewPrivacyPolicy={() => setCurrentView('privacy-policy')}
+        onContactSupport={() => setCurrentView('contact-support')}
       />
     );
   }

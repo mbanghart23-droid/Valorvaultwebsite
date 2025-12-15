@@ -515,3 +515,61 @@ export function passwordResetConfirmationEmail(userName: string): string {
     </html>
   `;
 }
+
+/**
+ * Email template for contact support messages to admins
+ */
+export function contactSupportEmail(userName: string, userEmail: string, subject: string, message: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #0ea5e9; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+        .info-box { background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #0ea5e9; }
+        .message-box { background-color: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e5e7eb; white-space: pre-wrap; }
+        .info-row { margin: 10px 0; }
+        .label { font-weight: bold; color: #0ea5e9; }
+        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0;">📧 New Support Request</h1>
+        </div>
+        <div class="content">
+          <p>A user has submitted a support request through the Contact Support form.</p>
+          
+          <div class="info-box">
+            <div class="info-row">
+              <span class="label">From:</span> ${userName}
+            </div>
+            <div class="info-row">
+              <span class="label">Email:</span> ${userEmail}
+            </div>
+            <div class="info-row">
+              <span class="label">Subject:</span> ${subject}
+            </div>
+          </div>
+          
+          <p><strong>Message:</strong></p>
+          <div class="message-box">${message}</div>
+          
+          <p style="margin-top: 30px; padding: 15px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <strong>⚠️ Action Required:</strong> Please respond to this user at ${userEmail}
+          </p>
+          
+          <div class="footer">
+            <p>This is an automated notification from Valor Registry</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, LogOut, Mail, Send } from 'lucide-react';
+import { sendSupportMessage } from '../utils/api/support';
+import { toast } from 'sonner@2.0.3';
 
 interface ContactSupportProps {
+  accessToken: string;
   onBack: () => void;
   onLogout: () => void;
 }
 
-export function ContactSupport({ onBack, onLogout }: ContactSupportProps) {
+export function ContactSupport({ accessToken, onBack, onLogout }: ContactSupportProps) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [captchaAnswer, setCaptchaAnswer] = useState('');
@@ -26,7 +29,7 @@ export function ContactSupport({ onBack, onLogout }: ContactSupportProps) {
     setCaptchaAnswer('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check honeypot (should be empty)
@@ -37,23 +40,30 @@ export function ContactSupport({ onBack, onLogout }: ContactSupportProps) {
 
     // Check CAPTCHA
     if (parseInt(captchaAnswer) !== captchaQuestion.answer) {
-      alert('Incorrect answer to security question. Please try again.');
+      toast.error('Incorrect answer to security question. Please try again.');
       generateCaptcha();
       return;
     }
 
-    // In a real app, this would send the message to the admin
-    console.log('Support request:', { subject, message });
-    setSubmitted(true);
-
-    // Reset form after a delay
-    setTimeout(() => {
-      setSubject('');
-      setMessage('');
-      setCaptchaAnswer('');
-      setSubmitted(false);
-      generateCaptcha();
-    }, 3000);
+    // Send support request to backend
+    const result = await sendSupportMessage(subject, message, accessToken);
+    
+    if (result.success) {
+      toast.success('Support request sent successfully! We will respond via email.');
+      setSubmitted(true);
+      
+      // Reset form after a delay
+      setTimeout(() => {
+        setSubject('');
+        setMessage('');
+        setCaptchaAnswer('');
+        setSubmitted(false);
+        generateCaptcha();
+      }, 3000);
+    } else {
+      toast.error(result.error || 'Failed to send support request. Please try again.');
+      generateCaptcha(); // Regenerate CAPTCHA on error
+    }
   };
 
   return (

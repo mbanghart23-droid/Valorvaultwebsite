@@ -9,9 +9,10 @@ interface LandingPageProps {
   onViewPrivacyPolicy?: () => void;
   onGetStarted?: () => void;
   onSignIn?: () => void;
+  onContactSupport?: () => void;
 }
 
-export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPrivacyPolicy, onGetStarted, onSignIn }: LandingPageProps) {
+export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPrivacyPolicy, onGetStarted, onSignIn, onContactSupport }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Simple Header */}
@@ -33,13 +34,13 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <a
-                href="mailto:help@valorregistry.com"
+              <button
+                onClick={onContactSupport || onSignIn || onBack}
                 className="flex items-center gap-2 px-4 py-2 text-neutral-600 hover:text-black transition-colors"
               >
                 <Mail className="w-4 h-4" />
                 <span className="hidden sm:inline">Have Questions or Suggestions?</span>
-              </a>
+              </button>
               <button
                 onClick={onSignIn || onBack}
                 className="px-5 py-2 text-black hover:text-neutral-600 active:text-neutral-700 transition-colors"
