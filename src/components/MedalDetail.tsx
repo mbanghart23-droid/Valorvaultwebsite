@@ -204,6 +204,22 @@ export function MedalDetail({ medal, onBack, onEdit, onDelete, onContactOwner }:
                         </div>
                       </div>
                     )}
+
+                    {medal.clasps && medal.clasps.length > 0 && (
+                      <div className="flex items-start gap-3 p-4 bg-slate-900 rounded-lg sm:col-span-2">
+                        <Award className="w-5 h-5 text-amber-500 mt-0.5" />
+                        <div>
+                          <p className="text-slate-400 text-sm">Clasps</p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {medal.clasps.map((clasp, index) => (
+                              <span key={index} className="inline-block px-3 py-1 bg-amber-600/20 text-amber-300 rounded-full text-sm">
+                                {clasp}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

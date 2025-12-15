@@ -286,6 +286,19 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                               </div>
                             )}
                           </div>
+
+                          {medal.clasps && medal.clasps.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                              <p className="text-neutral-600 text-sm mb-2">Clasps:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {medal.clasps.map((clasp, index) => (
+                                  <span key={index} className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
+                                    {clasp}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

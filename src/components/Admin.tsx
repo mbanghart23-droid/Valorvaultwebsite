@@ -237,6 +237,7 @@ export function Admin({
                 <option value="branch">Branch of Service</option>
                 <option value="country">Country</option>
                 <option value="category">Medal Category</option>
+                <option value="clasp">Medal Clasp</option>
               </select>
             </div>
 

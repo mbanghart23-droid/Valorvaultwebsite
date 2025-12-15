@@ -127,7 +127,7 @@ app.post("/make-server-8db4ea83/auth/register", async (c) => {
     // Send confirmation email to the new user
     await sendEmail({
       to: email,
-      subject: 'Welcome to Valor Vault - Registration Received',
+      subject: 'Welcome to Valor Registry - Registration Received',
       html: registrationConfirmationEmail(userProfile)
     });
     console.log(`Sent registration confirmation email to ${email}`);
@@ -890,7 +890,7 @@ app.put("/make-server-8db4ea83/admin/users/:id/activate", async (c) => {
     // Send email to user
     await sendEmail({
       to: targetUser.email,
-      subject: 'Welcome to Valor Vault - Account Activated!',
+      subject: 'Welcome to Valor Registry - Account Activated!',
       html: accountActivatedEmail(targetUser)
     });
     console.log(`Sent activation email to ${targetUser.email}`);
@@ -1001,7 +1001,8 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
       era: {},
       branch: {},
       country: {},
-      category: {}
+      category: {},
+      clasp: {}
     };
     
     // Count occurrences of each value
@@ -1017,11 +1018,17 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
         stats.country[person.country] = (stats.country[person.country] || 0) + 1;
       }
       
-      // Count medal-level categories
+      // Count medal-level categories and clasps
       if (person.medals && Array.isArray(person.medals)) {
         for (const medal of person.medals) {
           if (medal.category) {
             stats.category[medal.category] = (stats.category[medal.category] || 0) + 1;
+          }
+          // Count clasps
+          if (medal.clasps && Array.isArray(medal.clasps)) {
+            for (const clasp of medal.clasps) {
+              stats.clasp[clasp] = (stats.clasp[clasp] || 0) + 1;
+            }
           }
         }
       }

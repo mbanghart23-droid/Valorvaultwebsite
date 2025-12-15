@@ -9,8 +9,8 @@ if (!RESEND_API_KEY) {
 // Email configuration
 // For testing: Use Resend's test domain (onboarding@resend.dev)
 // For production: Verify your own domain in Resend and update this to something like:
-// const FROM_EMAIL = 'Valor Vault <noreply@yourdomain.com>';
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Valor Vault <onboarding@resend.dev>';
+// const FROM_EMAIL = 'Valor Registry <noreply@yourdomain.com>';
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Valor Registry <noreply@valorregistry.com>';
 
 interface EmailOptions {
   to: string;
@@ -81,7 +81,7 @@ export function newRegistrationEmail(userProfile: any): string {
           <h1 style="margin: 0;">🎖️ New User Registration</h1>
         </div>
         <div class="content">
-          <p>A new user has registered for Valor Vault and is awaiting account activation.</p>
+          <p>A new user has registered for Valor Registry and is awaiting account activation.</p>
           
           <div class="info-box">
             <div class="info-row">
@@ -98,11 +98,11 @@ export function newRegistrationEmail(userProfile: any): string {
           <p>Please review this registration and activate the account if appropriate.</p>
           
           <p style="text-align: center; color: #6b7280; font-size: 14px;">
-            Log in to the Valor Vault admin panel to review and activate this account.
+            Log in to the Valor Registry admin panel to review and activate this account.
           </p>
           
           <div class="footer">
-            <p>This is an automated notification from Valor Vault</p>
+            <p>This is an automated notification from Valor Registry</p>
           </div>
         </div>
       </div>
@@ -137,13 +137,13 @@ export function registrationConfirmationEmail(userProfile: any): string {
         <div class="content">
           <p>Hi ${userProfile.name},</p>
           
-          <p>Thank you for registering with Valor Vault! Your account has been created successfully.</p>
+          <p>Thank you for registering with Valor Registry! Your account has been created successfully.</p>
           
           <div class="info-box">
             <h3 style="margin-top: 0; color: #f59e0b;">⏳ Next Steps</h3>
             <p><strong>Your account is pending administrator approval.</strong></p>
             <p>Our team manually reviews each registration to maintain a trusted community of collectors and historians. This typically takes 24-48 hours.</p>
-            <p>You will receive another email once your account has been activated, at which point you can log in and start using Valor Vault.</p>
+            <p>You will receive another email once your account has been activated, at which point you can log in and start using Valor Registry.</p>
           </div>
           
           <p><strong>Account Details:</strong></p>
@@ -156,7 +156,7 @@ export function registrationConfirmationEmail(userProfile: any): string {
           
           <div class="footer">
             <p>Thank you for your patience!</p>
-            <p>– The Valor Vault Team</p>
+            <p>– The Valor Registry Team</p>
           </div>
         </div>
       </div>
@@ -187,13 +187,13 @@ export function accountActivatedEmail(userProfile: any): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0;">🎉 Welcome to Valor Vault!</h1>
+          <h1 style="margin: 0;">🎉 Welcome to Valor Registry!</h1>
         </div>
         <div class="content">
           <div class="welcome-box">
             <h2 style="color: #059669; margin-top: 0;">Your Account is Active</h2>
             <p>Hi ${userProfile.name},</p>
-            <p>Great news! Your Valor Vault account has been activated by an administrator.</p>
+            <p>Great news! Your Valor Registry account has been activated by an administrator.</p>
             <p>You can now log in and start cataloging your military medal collection.</p>
           </div>
           
@@ -208,7 +208,7 @@ export function accountActivatedEmail(userProfile: any): string {
           
           <div class="footer">
             <p>Welcome aboard!</p>
-            <p>– The Valor Vault Team</p>
+            <p>– The Valor Registry Team</p>
           </div>
         </div>
       </div>
@@ -264,10 +264,10 @@ export function contactRequestEmail(request: any): string {
             "${request.message}"
           </div>
           
-          <p>You can approve or decline this request by logging in to Valor Vault and viewing your notifications page.</p>
+          <p>You can approve or decline this request by logging in to Valor Registry and viewing your notifications page.</p>
           
           <div class="footer">
-            <p>This is an automated notification from Valor Vault</p>
+            <p>This is an automated notification from Valor Registry</p>
           </div>
         </div>
       </div>
@@ -312,19 +312,19 @@ export function requestApprovedEmail(request: any): string {
           <p>The collector has shared their contact information with you. You can now reach out directly to discuss the collection.</p>
           
           <p style="text-align: center; color: #6b7280;">
-            Contact information will be visible when you view this request in your Valor Vault notifications.
+            Contact information will be visible when you view this request in your Valor Registry notifications.
           </p>
           
           <p><strong>Next steps:</strong></p>
           <ul>
-            <li>Log in to Valor Vault to view the collector's contact information</li>
+            <li>Log in to Valor Registry to view the collector's contact information</li>
             <li>Be respectful and professional in your communication</li>
             <li>Share information and insights about the service member</li>
           </ul>
           
           <div class="footer">
             <p>Happy connecting!</p>
-            <p>– The Valor Vault Team</p>
+            <p>– The Valor Registry Team</p>
           </div>
         </div>
       </div>
@@ -368,10 +368,10 @@ export function requestDeclinedEmail(request: any): string {
             <li>Time constraints</li>
           </ul>
           
-          <p>You can continue exploring other collections in the Valor Vault community.</p>
+          <p>You can continue exploring other collections in the Valor Registry community.</p>
           
           <div class="footer">
-            <p>Thank you for using Valor Vault</p>
+            <p>Thank you for using Valor Registry</p>
           </div>
         </div>
       </div>
@@ -432,7 +432,7 @@ export function passwordResetEmail(userName: string, resetToken: string, expires
         </div>
         <div class="content">
           <p>Hi ${userName},</p>
-          <p>We received a request to reset your password for your Valor Vault account.</p>
+          <p>We received a request to reset your password for your Valor Registry account.</p>
           
           <p style="text-align: center;">
             <a href="${resetUrl}" class="button">Reset Your Password</a>
@@ -456,7 +456,7 @@ export function passwordResetEmail(userName: string, resetToken: string, expires
           
           <div class="footer">
             <p>For security reasons, this link will only work once.</p>
-            <p>– The Valor Vault Team</p>
+            <p>– The Valor Registry Team</p>
           </div>
         </div>
       </div>
@@ -497,7 +497,7 @@ export function passwordResetConfirmationEmail(userName: string): string {
             </p>
           </div>
           
-          <p>You can now log in to Valor Vault using your new password.</p>
+          <p>You can now log in to Valor Registry using your new password.</p>
           
           <p><strong>If you didn't make this change:</strong></p>
           <ul>
@@ -507,7 +507,7 @@ export function passwordResetConfirmationEmail(userName: string): string {
           </ul>
           
           <div class="footer">
-            <p>This is an automated security notification from Valor Vault</p>
+            <p>This is an automated security notification from Valor Registry</p>
           </div>
         </div>
       </div>

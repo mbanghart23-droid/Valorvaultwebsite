@@ -1,5 +1,5 @@
 import { Shield, Award, Users, Search, ArrowRight, Mail, Check } from 'lucide-react';
-import badgeBanditLogo from 'figma:asset/515f45d68c39d27c4ecc63c260e45e06ae265dd8.png';
+import badgeBanditLogo from 'figma:asset/5891d250c1c6c6df6be229a8f7939f21cc540fbb.png';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LandingPageProps {
@@ -151,64 +151,148 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
         </div>
       </section>
 
-      {/* Historical Image Showcase */}
-      <section className="py-20 bg-white">
+      {/* Badge Bandit Partnership - Prominent Section */}
+      <section className="py-16 bg-gradient-to-br from-amber-50 via-white to-amber-50 border-y border-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-neutral-700 mb-6 leading-relaxed">
-                Catalog medals and decorations spanning multiple conflicts and eras. Whether you collect from the Anglo-Boer War, the Great War, World War II, or beyond, Valor Registry provides the tools to document and preserve these important historical artifacts.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-neutral-700">Track named and unnamed medals with detailed attribution</p>
+          <div className="bg-white border-2 border-amber-200 rounded-2xl shadow-xl overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div className="p-8 md:p-12">
+                <div className="inline-block px-4 py-1.5 bg-amber-100 text-amber-900 rounded-full text-sm mb-4">
+                  Official Partner
                 </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-neutral-700">Connect with collectors to reunite separated medal groups</p>
+                <h2 className="text-black mb-4">Developed in Partnership with BadgeBandit.com</h2>
+                <p className="text-neutral-700 mb-6 leading-relaxed">
+                  BadgeBandit.com is your trusted source for authentic militaria, medals, and military history.
+                </p>
+                <a
+                  href="https://badgebandit.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                >
+                  Visit BadgeBandit.com
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 p-8 md:p-12 flex items-center justify-center">
+                <a
+                  href="https://badgebandit.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group"
+                >
+                  <img
+                    src={badgeBanditLogo}
+                    alt="BadgeBandit.com - Militaria, Medals, History"
+                    className="h-48 w-auto transition-transform group-hover:scale-105 filter drop-shadow-lg"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Historical Image Showcase - Redesigned */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-black mb-4">A Complete Platform for Medal Collectors</h2>
+            <p className="text-neutral-600 text-xl max-w-3xl mx-auto">
+              Catalog medals and decorations spanning multiple conflicts and eras—from the Anglo-Boer War to modern campaigns.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Images Grid - Now on the Left */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <div className="relative group overflow-hidden rounded-xl shadow-lg border-2 border-neutral-200">
+                  <div className="aspect-square overflow-hidden">
+                    <ImageWithFallback
+                      src="https://images.unsplash.com/photo-1667918140078-9db890beab86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib2VyJTIwd2FyJTIwbWVkYWx8ZW58MXx8fHwxNzY1NzU4OTY3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                      alt="Boer War Medal"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-neutral-700">Upload historical photos and documentation</p>
+                <div className="relative group overflow-hidden rounded-xl shadow-lg border-2 border-neutral-200">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <ImageWithFallback
+                      src="https://images.unsplash.com/photo-1604263368964-458cd7644b37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwbWlsaXRhcnklMjB1bmlmb3JtfGVufDF8fHx8MTc2NTc1ODc4NXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                      alt="Vintage Military Uniform"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-neutral-700">Admin-approved community of verified collectors</p>
+              </div>
+              <div className="space-y-6 pt-12">
+                <div className="relative group overflow-hidden rounded-xl shadow-lg border-2 border-neutral-200">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <ImageWithFallback
+                      src="https://images.unsplash.com/photo-1603455076861-ae8174b7432d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3YXIlMjBtZW1vcmlhbCUyMHdyZWF0aHxlbnwxfHx8fDE3NjU3NTg3ODR8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                      alt="War Memorial Wreath"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div className="relative group overflow-hidden rounded-xl shadow-lg border-2 border-neutral-200">
+                  <div className="aspect-square overflow-hidden">
+                    <ImageWithFallback
+                      src="https://images.unsplash.com/photo-1668290547575-9746bd4a20e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZW1lbWJyYW5jZSUyMHBvcHB5JTIwd3JlYXRofGVufDF8fHx8MTc2NTc1ODkwOXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                      alt="Remembrance Poppy Wreath"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div className="aspect-square rounded-lg overflow-hidden border border-neutral-200">
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1603738528212-a984bf8e81f4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZW1lbWJyYW5jZSUyMHBvcHB5JTIwbWVtb3JpYWx8ZW58MXx8fHwxNzY1NzQ4MDEzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Remembrance Poppy Memorial"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+
+            {/* Features List - Now on the Right */}
+            <div>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-green-50 to-white border-2 border-green-100 rounded-xl hover:shadow-lg transition-shadow">
+                  <div className="flex-shrink-0 w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h4 className="text-black mb-2">Track Named & Unnamed Medals</h4>
+                    <p className="text-neutral-600">Detailed attribution, provenance tracking, and historical documentation for every piece in your collection.</p>
+                  </div>
                 </div>
-                <div className="aspect-[4/3] rounded-lg overflow-hidden border border-neutral-200">
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1720131749151-cf7d3d02a188?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaWxpdGFyeSUyMHNlcnZpY2UlMjByaWJib25zfGVufDF8fHx8MTc2NTc0ODAxMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Military Service Ribbons"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+
+                <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100 rounded-xl hover:shadow-lg transition-shadow">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h4 className="text-black mb-2">Connect & Reunite Medal Groups</h4>
+                    <p className="text-neutral-600">Join a global network of collectors working to reunite separated medal groups and restore historical integrity.</p>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-4 pt-8">
-                <div className="aspect-[4/3] rounded-lg overflow-hidden border border-neutral-200">
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1667406593453-5bc911f8dd50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxCcml0aXNoJTIwbWlsaXRhcnklMjBtZWRhbHN8ZW58MXx8fHwxNzY1NzQ4MDExfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="British Military Medals"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+
+                <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-amber-50 to-white border-2 border-amber-100 rounded-xl hover:shadow-lg transition-shadow">
+                  <div className="flex-shrink-0 w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h4 className="text-black mb-2">Upload Photos & Documents</h4>
+                    <p className="text-neutral-600">Preserve historical context with profile images, documentation, and detailed service records for each individual.</p>
+                  </div>
                 </div>
-                <div className="aspect-square rounded-lg overflow-hidden border border-neutral-200">
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1758204054877-fb1c7ba85ea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwdW5pZm9ybSUyMHBvcnRyYWl0fGVufDF8fHx8MTc2NTc0ODAxM3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Vintage Uniform Portrait"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+
+                <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-purple-50 to-white border-2 border-purple-100 rounded-xl hover:shadow-lg transition-shadow">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h4 className="text-black mb-2">Verified Collector Community</h4>
+                    <p className="text-neutral-600">All accounts are admin-approved to maintain a trusted, professional community of serious collectors and historians.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -230,30 +314,6 @@ export function LandingPage({ onBack, onLogout, onViewTermsOfService, onViewPriv
             Create Free Account
             <ArrowRight className="w-5 h-5" />
           </button>
-        </div>
-      </section>
-
-      {/* Partnership Section */}
-      <section className="bg-white py-16 border-t border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <div className="text-center md:text-right">
-              <p className="text-neutral-600 text-lg mb-2">Developed in partnership with</p>
-              <p className="text-neutral-500 text-sm">Your trusted source for militaria, medals, and military history</p>
-            </div>
-            <a
-              href="https://badgebandit.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group"
-            >
-              <img
-                src={badgeBanditLogo}
-                alt="BadgeBandit.com - Militaria, Medals, History"
-                className="h-32 w-auto transition-transform group-hover:scale-105"
-              />
-            </a>
-          </div>
         </div>
       </section>
 

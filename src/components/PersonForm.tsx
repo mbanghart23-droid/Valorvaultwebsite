@@ -45,8 +45,10 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     branch: '',
     era: '',
     category: '',
-    inCollection: false
+    inCollection: false,
+    clasps: []
   });
+  const [claspInput, setClaspInput] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -155,7 +157,8 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
         estimatedValue: medalFormData.estimatedValue,
         serialNumber: medalFormData.serialNumber,
         medalNumber: medalFormData.medalNumber,
-        isNamed: medalFormData.isNamed
+        isNamed: medalFormData.isNamed,
+        clasps: medalFormData.clasps || []
       };
 
       if (editingMedalIndex !== null) {
@@ -173,8 +176,10 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
         branch: '',
         era: '',
         category: '',
-        inCollection: false
+        inCollection: false,
+        clasps: []
       });
+      setClaspInput('');
       setShowMedalForm(false);
     }
   };
@@ -493,7 +498,8 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                       branch: formData.branch,
                       era: formData.era,
                       category: '',
-                      inCollection: false
+                      inCollection: false,
+                      clasps: []
                     });
                     setEditingMedalIndex(null);
                     setShowMedalForm(true);
@@ -594,6 +600,76 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                         onChange={handleMedalChange}
                         className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                       />
+                    </div>
+
+                    {/* Clasps Section */}
+                    <div className="md:col-span-2">
+                      <label className="block text-neutral-700 mb-2">
+                        Clasps
+                      </label>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={claspInput}
+                          onChange={(e) => setClaspInput(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (claspInput.trim()) {
+                                setMedalFormData({
+                                  ...medalFormData,
+                                  clasps: [...(medalFormData.clasps || []), claspInput.trim()]
+                                });
+                                setClaspInput('');
+                              }
+                            }
+                          }}
+                          placeholder="e.g., 1939-1945, Burma, Atlantic"
+                          className="flex-1 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (claspInput.trim()) {
+                              setMedalFormData({
+                                ...medalFormData,
+                                clasps: [...(medalFormData.clasps || []), claspInput.trim()]
+                              });
+                              setClaspInput('');
+                            }
+                          }}
+                          className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                        >
+                          Add Clasp
+                        </button>
+                      </div>
+                      {medalFormData.clasps && medalFormData.clasps.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {medalFormData.clasps.map((clasp, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-neutral-100 text-black rounded-full text-sm"
+                            >
+                              {clasp}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMedalFormData({
+                                    ...medalFormData,
+                                    clasps: medalFormData.clasps?.filter((_, i) => i !== index)
+                                  });
+                                }}
+                                className="ml-1 text-neutral-500 hover:text-black"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-neutral-500 text-sm mt-2">
+                        Some medals have clasps (also called bars) that are awarded for specific campaigns, dates, or achievements.
+                      </p>
                     </div>
 
                     <div className="md:col-span-2">
@@ -748,8 +824,10 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                           branch: '',
                           era: '',
                           category: '',
-                          inCollection: false
+                          inCollection: false,
+                          clasps: []
                         });
+                        setClaspInput('');
                       }}
                       className="px-6 py-2 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg transition-colors"
                     >

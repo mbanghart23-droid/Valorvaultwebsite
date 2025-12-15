@@ -38,6 +38,7 @@ export interface PersonMedal {
   serialNumber?: string;
   isNamed?: boolean;
   medalNumber?: string;
+  clasps?: string[];
 }
 
 export interface Person {

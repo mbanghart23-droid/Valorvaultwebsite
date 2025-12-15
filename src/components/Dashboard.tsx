@@ -51,6 +51,8 @@ export function Dashboard({
   const [filterCountry, setFilterCountry] = useState('');
   const [filterEra, setFilterEra] = useState('');
   const [filterBranch, setFilterBranch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCollectionStatus, setFilterCollectionStatus] = useState('');
   const [searchGlobal, setSearchGlobal] = useState(false);
 
   // Choose which person list to search
@@ -60,10 +62,13 @@ export function Dashboard({
   const countries = Array.from(new Set(personsToSearch.map(p => p.country))).sort();
   const eras = Array.from(new Set(personsToSearch.map(p => p.era))).sort();
   const branches = Array.from(new Set(personsToSearch.map(p => p.branch))).sort();
+  const categories = Array.from(new Set(personsToSearch.flatMap(p => p.medals.map(m => m.category)))).sort();
+  const collectionStatuses = ['In Collection', 'Not in Collection'];
 
   // Filter persons based on search and filters
   const filteredPersons = personsToSearch.filter(person => {
-    const matchesSearch = searchQuery === '' || 
+    // Check if search matches person fields OR any medal fields
+    const matchesPersonFields = searchQuery === '' || 
       person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,12 +78,24 @@ export function Dashboard({
       (person.unit && person.unit.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (person.biography && person.biography.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (person.ownerName && person.ownerName.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Check if search matches any medal fields
+    const matchesMedalFields = searchQuery === '' || person.medals.some(medal =>
+      medal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      medal.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (medal.description && medal.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (medal.clasps && medal.clasps.some(clasp => clasp.toLowerCase().includes(searchQuery.toLowerCase())))
+    );
+
+    const matchesSearch = matchesPersonFields || matchesMedalFields;
 
     const matchesCountry = filterCountry === '' || person.country === filterCountry;
     const matchesEra = filterEra === '' || person.era === filterEra;
     const matchesBranch = filterBranch === '' || person.branch === filterBranch;
+    const matchesCategory = filterCategory === '' || person.medals.some(m => m.category === filterCategory);
+    const matchesCollectionStatus = filterCollectionStatus === '' || person.medals.some(m => m.inCollection === (filterCollectionStatus === 'In Collection'));
 
-    return matchesSearch && matchesCountry && matchesEra && matchesBranch;
+    return matchesSearch && matchesCountry && matchesEra && matchesBranch && matchesCategory && matchesCollectionStatus;
   });
 
   // Calculate total medals in collection
@@ -287,6 +304,8 @@ export function Dashboard({
                   setFilterCountry('');
                   setFilterEra('');
                   setFilterBranch('');
+                  setFilterCategory('');
+                  setFilterCollectionStatus('');
                 }}
                 className="w-5 h-5 bg-white border-neutral-300 rounded text-black focus:ring-black focus:ring-offset-white"
               />
@@ -340,6 +359,28 @@ export function Dashboard({
                 <option key={branch} value={branch}>{branch}</option>
               ))}
             </select>
+
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+            >
+              <option value="">All Medal Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+
+            <select
+              value={filterCollectionStatus}
+              onChange={(e) => setFilterCollectionStatus(e.target.value)}
+              className="px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+            >
+              <option value="">All Collection Statuses</option>
+              {collectionStatuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -381,12 +422,12 @@ export function Dashboard({
           <div className="text-center py-16">
             <Users className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
             <h3 className="text-neutral-600 mb-2">
-              {searchQuery || filterCountry || filterEra || filterBranch ? 'No records found' : 'No service members in your collection yet'}
+              {searchQuery || filterCountry || filterEra || filterBranch || filterCategory || filterCollectionStatus ? 'No records found' : 'No service members in your collection yet'}
             </h3>
             <p className="text-neutral-500 mb-6">
-              {searchQuery || filterCountry || filterEra || filterBranch ? 'Try adjusting your search or filters' : 'Start building your collection by adding your first service member'}
+              {searchQuery || filterCountry || filterEra || filterBranch || filterCategory || filterCollectionStatus ? 'Try adjusting your search or filters' : 'Start building your collection by adding your first service member'}
             </p>
-            {!searchQuery && !filterCountry && !filterEra && !filterBranch && !searchGlobal && (
+            {!searchQuery && !filterCountry && !filterEra && !filterBranch && !filterCategory && !filterCollectionStatus && !searchGlobal && (
               <button
                 onClick={onAddPerson}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
