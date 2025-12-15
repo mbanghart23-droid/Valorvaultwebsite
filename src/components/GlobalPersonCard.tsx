@@ -35,13 +35,13 @@ export function GlobalPersonCard({ person, onView, onSendContactRequest }: Globa
             {person.country && (
               <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
                 <MapPin className="w-4 h-4" />
-                <span>{person.country}</span>
+                <span>{Array.isArray(person.country) ? person.country.join(', ') : person.country}</span>
               </div>
             )}
-            {person.era && person.era.length > 0 && (
+            {person.era && (Array.isArray(person.era) ? person.era.length > 0 : true) && (
               <div className="flex items-center gap-2 text-neutral-600 text-sm mb-2">
                 <Calendar className="w-4 h-4" />
-                <span>{person.era.join(', ')}</span>
+                <span>{Array.isArray(person.era) ? person.era.join(', ') : person.era}</span>
               </div>
             )}
             <div className="flex items-center gap-2 text-black text-sm">

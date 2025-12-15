@@ -106,13 +106,13 @@ export function Dashboard({
   const [showSearchHelp, setShowSearchHelp] = useState(false);
 
   // Choose which person list to search
-  const personsToSearch = searchGlobal ? globalPersons : persons;
+  const personsToSearch = searchGlobal ? (globalPersons || []) : (persons || []);
 
   // Get unique values for filters
   const countries = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.country) ? p.country : (p.country ? [p.country] : [])))).sort();
   const eras = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.era) ? p.era : (p.era ? [p.era] : [])))).sort();
   const branches = Array.from(new Set(personsToSearch.map(p => p.branch).filter(Boolean))).sort();
-  const categories = Array.from(new Set(personsToSearch.flatMap(p => p.medals.map(m => m.category)))).sort();
+  const categories = Array.from(new Set(personsToSearch.flatMap(p => (p.medals || []).map(m => m.category)))).sort();
   const collectionStatuses = ['In Collection', 'Not in Collection'];
 
   // Filter persons based on search and filters
@@ -130,7 +130,7 @@ export function Dashboard({
       (person.ownerName && matchesWildcard(person.ownerName, searchQuery));
     
     // Check if search matches any medal fields
-    const matchesMedalFields = searchQuery === '' || person.medals.some(medal =>
+    const matchesMedalFields = searchQuery === '' || (person.medals || []).some(medal =>
       matchesWildcard(medal.name, searchQuery) ||
       matchesWildcard(medal.category, searchQuery) ||
       (medal.description && matchesWildcard(medal.description, searchQuery)) ||
@@ -142,8 +142,8 @@ export function Dashboard({
     const matchesCountry = filterCountry === '' || (Array.isArray(person.country) && person.country.includes(filterCountry));
     const matchesEra = filterEra === '' || (Array.isArray(person.era) && person.era.includes(filterEra));
     const matchesBranch = filterBranch === '' || person.branch === filterBranch;
-    const matchesCategory = filterCategory === '' || person.medals.some(m => m.category === filterCategory);
-    const matchesCollectionStatus = filterCollectionStatus === '' || person.medals.some(m => m.inCollection === (filterCollectionStatus === 'In Collection'));
+    const matchesCategory = filterCategory === '' || (person.medals || []).some(m => m.category === filterCategory);
+    const matchesCollectionStatus = filterCollectionStatus === '' || (person.medals || []).some(m => m.inCollection === (filterCollectionStatus === 'In Collection'));
 
     return matchesSearch && matchesCountry && matchesEra && matchesBranch && matchesCategory && matchesCollectionStatus;
   });
@@ -175,7 +175,7 @@ export function Dashboard({
               </div>
               <div>
                 <h1 className="text-black">Valor Registry</h1>
-                <p className="text-neutral-600 text-sm">Welcome back, {userProfile.name}</p>
+                <p className="text-neutral-600 text-sm">Welcome back, {userProfile?.name || 'User'}</p>
               </div>
             </div>
 

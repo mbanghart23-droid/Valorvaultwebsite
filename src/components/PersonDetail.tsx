@@ -68,16 +68,28 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                       <p className="text-white/80 mb-3">{person.rank.join(', ')}{person.branch ? `, ${person.branch}` : ''}</p>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      {person.country && person.country.length > 0 && person.country.map((c, i) => (
-                        <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                          {c}
-                        </span>
-                      ))}
-                      {person.era && person.era.length > 0 && person.era.map((e, i) => (
-                        <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                          {e}
-                        </span>
-                      ))}
+                      {person.country && (Array.isArray(person.country) ? person.country.length > 0 : true) && (
+                        Array.isArray(person.country) ? person.country.map((c, i) => (
+                          <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                            {c}
+                          </span>
+                        )) : (
+                          <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                            {person.country}
+                          </span>
+                        )
+                      )}
+                      {person.era && (Array.isArray(person.era) ? person.era.length > 0 : true) && (
+                        Array.isArray(person.era) ? person.era.map((e, i) => (
+                          <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                            {e}
+                          </span>
+                        )) : (
+                          <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                            {person.era}
+                          </span>
+                        )
+                      )}
                     </div>
                     {!isOwnPerson && person.ownerName && (
                       <div className="flex items-center gap-2 text-white/90 mt-3">
@@ -193,27 +205,35 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                         <p className="text-black">{person.branch}</p>
                       </div>
                     )}
-                    {person.country && person.country.length > 0 && (
+                    {person.country && (Array.isArray(person.country) ? person.country.length > 0 : true) && (
                       <div className="col-span-2">
                         <p className="text-neutral-600 text-sm mb-1">Countries</p>
                         <div className="flex flex-wrap gap-2">
-                          {person.country.map((c, i) => (
+                          {Array.isArray(person.country) ? person.country.map((c, i) => (
                             <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
                               {c}
                             </span>
-                          ))}
+                          )) : (
+                            <span className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
+                              {person.country}
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}
-                    {person.era && person.era.length > 0 && (
+                    {person.era && (Array.isArray(person.era) ? person.era.length > 0 : true) && (
                       <div className="col-span-2">
                         <p className="text-neutral-600 text-sm mb-1">Conflicts/Eras</p>
                         <div className="flex flex-wrap gap-2">
-                          {person.era.map((e, i) => (
+                          {Array.isArray(person.era) ? person.era.map((e, i) => (
                             <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
                               {e}
                             </span>
-                          ))}
+                          )) : (
+                            <span className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
+                              {person.era}
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}
