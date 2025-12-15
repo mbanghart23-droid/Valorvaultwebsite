@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Search, Plus, User, LogOut, Users, Filter, Bell, Globe, Shield, HelpCircle, Info } from 'lucide-react';
+import { Shield, Plus, Search, User, Bell, Settings, LogOut, ShieldCheck, Mail, Info, HelpCircle, MessageSquare, Users, Globe, Filter } from 'lucide-react';
 import { Person, UserProfile } from '../App';
+import { getVersionString } from '../version';
 import { PersonCard } from './PersonCard';
 import { GlobalPersonCard } from './GlobalPersonCard';
 
@@ -488,6 +489,8 @@ export function Dashboard({
             </button>
             <span className="text-neutral-400">•</span>
             <span>© 2024 Valor Registry</span>
+            <span className="text-neutral-400">•</span>
+            <span className="font-mono text-neutral-500">{getVersionString()}</span>
           </div>
         </div>
       </footer>

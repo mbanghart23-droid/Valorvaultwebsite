@@ -1,4 +1,5 @@
 import { Shield, ArrowLeft, LogOut } from 'lucide-react';
+import { getFullVersionString, VERSION } from '../version';
 
 interface AboutProps {
   onBack: () => void;
@@ -111,8 +112,9 @@ export function About({ onBack, onLogout }: AboutProps) {
           </div>
         </div>
 
-        <div className="text-center text-sm text-neutral-600">
+        <div className="text-center text-sm text-neutral-600 space-y-1">
           <p>© 2024 Valor Registry. Built for military medal collectors and historians.</p>
+          <p className="font-mono text-neutral-500">{getFullVersionString()} • Released {VERSION.releaseDate}</p>
         </div>
       </main>
     </div>
