@@ -60,7 +60,7 @@ export function Dashboard({
 
   // Get unique values for filters
   const countries = Array.from(new Set(personsToSearch.map(p => p.country))).sort();
-  const eras = Array.from(new Set(personsToSearch.map(p => p.era))).sort();
+  const eras = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.era) ? p.era : [p.era]))).sort();
   const branches = Array.from(new Set(personsToSearch.map(p => p.branch))).sort();
   const categories = Array.from(new Set(personsToSearch.flatMap(p => p.medals.map(m => m.category)))).sort();
   const collectionStatuses = ['In Collection', 'Not in Collection'];
@@ -72,10 +72,10 @@ export function Dashboard({
       person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.era.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (person.rank && person.rank.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (Array.isArray(person.era) && person.era.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+      (Array.isArray(person.rank) && person.rank.some(r => r.toLowerCase().includes(searchQuery.toLowerCase()))) ||
       (person.serviceNumber && person.serviceNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (person.unit && person.unit.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (Array.isArray(person.unit) && person.unit.some(u => u.toLowerCase().includes(searchQuery.toLowerCase()))) ||
       (person.biography && person.biography.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (person.ownerName && person.ownerName.toLowerCase().includes(searchQuery.toLowerCase()));
     
@@ -90,7 +90,7 @@ export function Dashboard({
     const matchesSearch = matchesPersonFields || matchesMedalFields;
 
     const matchesCountry = filterCountry === '' || person.country === filterCountry;
-    const matchesEra = filterEra === '' || person.era === filterEra;
+    const matchesEra = filterEra === '' || (Array.isArray(person.era) && person.era.includes(filterEra));
     const matchesBranch = filterBranch === '' || person.branch === filterBranch;
     const matchesCategory = filterCategory === '' || person.medals.some(m => m.category === filterCategory);
     const matchesCollectionStatus = filterCollectionStatus === '' || person.medals.some(m => m.inCollection === (filterCollectionStatus === 'In Collection'));

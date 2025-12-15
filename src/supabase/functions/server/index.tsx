@@ -470,6 +470,14 @@ app.get("/make-server-8db4ea83/persons", async (c) => {
     
     // Get signed URLs for images
     for (const person of persons) {
+      // Get signed URL for profile image
+      if (person.profileImageFile) {
+        const signedUrl = await getSignedUrl(person.profileImageFile);
+        if (signedUrl) {
+          person.profileImage = signedUrl;
+        }
+      }
+      
       if (person.imageFiles && person.imageFiles.length > 0) {
         person.images = [];
         for (const filePath of person.imageFiles) {
@@ -502,6 +510,14 @@ app.get("/make-server-8db4ea83/persons/:id", async (c) => {
     
     if (!person) {
       return c.json({ error: 'Person not found' }, 404);
+    }
+    
+    // Get signed URL for profile image
+    if (person.profileImageFile) {
+      const signedUrl = await getSignedUrl(person.profileImageFile);
+      if (signedUrl) {
+        person.profileImage = signedUrl;
+      }
     }
     
     // Get signed URLs for images
@@ -540,6 +556,16 @@ app.post("/make-server-8db4ea83/persons", async (c) => {
     
     const personId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
+    // Handle profile image upload
+    let profileImageFile = '';
+    if (personData.profileImage && personData.profileImage.startsWith('data:')) {
+      const fileName = `person-${personId}-profile.jpg`;
+      const filePath = await uploadImage(userId, personData.profileImage, fileName);
+      if (filePath) {
+        profileImageFile = filePath;
+      }
+    }
+    
     // Handle image uploads
     const imageFiles = [];
     if (personData.images && personData.images.length > 0) {
@@ -554,12 +580,18 @@ app.post("/make-server-8db4ea83/persons", async (c) => {
     }
     
     // Validate and sanitize person data
-    const validatedData = validatePersonData(personData);
-    const sanitizedData = sanitizePersonData(validatedData);
+    const validation = validatePersonData(personData);
+    if (!validation.valid) {
+      console.log('Person validation errors:', validation.errors);
+      return c.json({ error: validation.errors.join(', ') }, 400);
+    }
+    const sanitizedData = sanitizePersonData(personData);
     
     const person = {
       id: personId,
       ...sanitizedData,
+      profileImageFile, // Store profile image file path
+      profileImage: undefined, // Remove base64 profile image
       imageFiles, // Store file paths
       images: undefined, // Remove base64 images
       ownerId: userId,
@@ -593,6 +625,21 @@ app.put("/make-server-8db4ea83/persons/:id", async (c) => {
       return c.json({ error: 'Person not found' }, 404);
     }
     
+    // Handle profile image update
+    let profileImageFile = existingPerson.profileImageFile || '';
+    if (updates.profileImage && updates.profileImage.startsWith('data:')) {
+      // Delete old profile image
+      if (profileImageFile) {
+        await deleteImage(profileImageFile);
+      }
+      // Upload new profile image
+      const fileName = `person-${personId}-profile.jpg`;
+      const filePath = await uploadImage(userId, updates.profileImage, fileName);
+      if (filePath) {
+        profileImageFile = filePath;
+      }
+    }
+    
     // Handle new image uploads
     let imageFiles = existingPerson.imageFiles || [];
     if (updates.images && updates.images.length > 0) {
@@ -616,12 +663,18 @@ app.put("/make-server-8db4ea83/persons/:id", async (c) => {
     }
     
     // Validate and sanitize person data
-    const validatedUpdates = validatePersonData(updates);
-    const sanitizedUpdates = sanitizePersonData(validatedUpdates);
+    const validation = validatePersonData(updates);
+    if (!validation.valid) {
+      console.log('Person update validation errors:', validation.errors);
+      return c.json({ error: validation.errors.join(', ') }, 400);
+    }
+    const sanitizedUpdates = sanitizePersonData(updates);
     
     const person = {
       ...existingPerson,
       ...sanitizedUpdates,
+      profileImageFile,
+      profileImage: undefined,
       imageFiles,
       images: undefined,
       id: personId,
@@ -651,6 +704,11 @@ app.delete("/make-server-8db4ea83/persons/:id", async (c) => {
     
     if (!person) {
       return c.json({ error: 'Person not found' }, 404);
+    }
+    
+    // Delete profile image from storage
+    if (person.profileImageFile) {
+      await deleteImage(person.profileImageFile);
     }
     
     // Delete images from storage
@@ -687,6 +745,14 @@ app.get("/make-server-8db4ea83/search/persons", async (c) => {
     for (const person of allPersons) {
       const ownerProfile = await kv.get(`user:${person.ownerId}`);
       if (ownerProfile && ownerProfile.profile.isDiscoverable) {
+        // Get signed URL for profile image
+        if (person.profileImageFile) {
+          const signedUrl = await getSignedUrl(person.profileImageFile);
+          if (signedUrl) {
+            person.profileImage = signedUrl;
+          }
+        }
+        
         // Get signed URLs for images
         if (person.imageFiles && person.imageFiles.length > 0) {
           person.images = [];
@@ -746,8 +812,9 @@ app.post("/make-server-8db4ea83/contact-requests", async (c) => {
     }
     
     // Validate contact message
-    if (!validateContactMessage(message)) {
-      return c.json({ error: 'Invalid contact message' }, 400);
+    const validation = validateContactMessage(message);
+    if (!validation.valid) {
+      return c.json({ error: validation.error || 'Invalid contact message' }, 400);
     }
     
     const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1027,10 +1094,27 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
     
     // Count occurrences of each value
     for (const person of allPersons) {
-      // Count person-level fields
-      if (person.era) {
-        stats.era[person.era] = (stats.era[person.era] || 0) + 1;
+      // Count person-level fields (now arrays)
+      if (person.rank && Array.isArray(person.rank)) {
+        for (const r of person.rank) {
+          stats.rank = stats.rank || {};
+          stats.rank[r] = (stats.rank[r] || 0) + 1;
+        }
       }
+      
+      if (person.era && Array.isArray(person.era)) {
+        for (const e of person.era) {
+          stats.era[e] = (stats.era[e] || 0) + 1;
+        }
+      }
+      
+      if (person.unit && Array.isArray(person.unit)) {
+        for (const u of person.unit) {
+          stats.unit = stats.unit || {};
+          stats.unit[u] = (stats.unit[u] || 0) + 1;
+        }
+      }
+      
       if (person.branch) {
         stats.branch[person.branch] = (stats.branch[person.branch] || 0) + 1;
       }
