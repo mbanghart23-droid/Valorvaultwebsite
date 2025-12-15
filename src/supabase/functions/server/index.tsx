@@ -1425,9 +1425,14 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
       return c.json({ error: 'Missing required fields' }, 400);
     }
     
+    console.log(`[MERGE] Starting merge: "${sourceValue}" → "${targetValue}" in field "${field}"`);
+    
     // Get all persons from all users
     const allPersons = await kv.getByPrefix('person:');
+    console.log(`[MERGE] Found ${allPersons.length} total person records to check`);
+    
     let updatedCount = 0;
+    let recordsWithSource = 0;
     
     // Update each person's records
     for (const person of allPersons) {
@@ -1438,16 +1443,22 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
         if (Array.isArray(person.era)) {
           const index = person.era.indexOf(sourceValue);
           if (index !== -1) {
+            recordsWithSource++;
+            console.log(`[MERGE] Found "${sourceValue}" in person ${person.id} era (array at index ${index})`);
             // Replace with target value if not already present
             if (!person.era.includes(targetValue)) {
               person.era[index] = targetValue;
+              console.log(`[MERGE] Replaced with "${targetValue}"`);
             } else {
               // Remove duplicate if target already exists
               person.era.splice(index, 1);
+              console.log(`[MERGE] Removed duplicate (target already exists)`);
             }
             updated = true;
           }
         } else if (typeof person.era === 'string' && person.era === sourceValue) {
+          recordsWithSource++;
+          console.log(`[MERGE] Found "${sourceValue}" in person ${person.id} era (string)`);
           person.era = targetValue;
           updated = true;
         }
