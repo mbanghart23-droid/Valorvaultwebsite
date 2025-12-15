@@ -1231,9 +1231,14 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
         }
       }
       
-      if (person.era && Array.isArray(person.era)) {
-        for (const e of person.era) {
-          stats.era[e] = (stats.era[e] || 0) + 1;
+      // Handle era - can be array or string (legacy data)
+      if (person.era) {
+        if (Array.isArray(person.era)) {
+          for (const e of person.era) {
+            stats.era[e] = (stats.era[e] || 0) + 1;
+          }
+        } else if (typeof person.era === 'string') {
+          stats.era[person.era] = (stats.era[person.era] || 0) + 1;
         }
       }
       
@@ -1247,9 +1252,15 @@ app.get("/make-server-8db4ea83/admin/dropdown-stats", async (c) => {
       if (person.branch) {
         stats.branch[person.branch] = (stats.branch[person.branch] || 0) + 1;
       }
-      if (person.country && Array.isArray(person.country)) {
-        for (const c of person.country) {
-          stats.country[c] = (stats.country[c] || 0) + 1;
+      
+      // Handle country - can be array or string (legacy data)
+      if (person.country) {
+        if (Array.isArray(person.country)) {
+          for (const c of person.country) {
+            stats.country[c] = (stats.country[c] || 0) + 1;
+          }
+        } else if (typeof person.country === 'string') {
+          stats.country[person.country] = (stats.country[person.country] || 0) + 1;
         }
       }
       
@@ -1312,19 +1323,29 @@ app.post("/make-server-8db4ea83/admin/dropdown-rename", async (c) => {
     for (const person of allPersons) {
       let updated = false;
       
-      // Handle person-level array fields
-      if (field === 'era' && person.era && Array.isArray(person.era)) {
-        const index = person.era.indexOf(oldValue);
-        if (index !== -1) {
-          person.era[index] = newValue;
+      // Handle person-level array fields AND legacy string values
+      if (field === 'era' && person.era) {
+        if (Array.isArray(person.era)) {
+          const index = person.era.indexOf(oldValue);
+          if (index !== -1) {
+            person.era[index] = newValue;
+            updated = true;
+          }
+        } else if (typeof person.era === 'string' && person.era === oldValue) {
+          person.era = newValue;
           updated = true;
         }
       }
       
-      if (field === 'country' && person.country && Array.isArray(person.country)) {
-        const index = person.country.indexOf(oldValue);
-        if (index !== -1) {
-          person.country[index] = newValue;
+      if (field === 'country' && person.country) {
+        if (Array.isArray(person.country)) {
+          const index = person.country.indexOf(oldValue);
+          if (index !== -1) {
+            person.country[index] = newValue;
+            updated = true;
+          }
+        } else if (typeof person.country === 'string' && person.country === oldValue) {
+          person.country = newValue;
           updated = true;
         }
       }
@@ -1413,28 +1434,38 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
       let updated = false;
       
       // Handle person-level array fields
-      if (field === 'era' && person.era && Array.isArray(person.era)) {
-        const index = person.era.indexOf(sourceValue);
-        if (index !== -1) {
-          // Replace with target value if not already present
-          if (!person.era.includes(targetValue)) {
-            person.era[index] = targetValue;
-          } else {
-            // Remove duplicate if target already exists
-            person.era.splice(index, 1);
+      if (field === 'era' && person.era) {
+        if (Array.isArray(person.era)) {
+          const index = person.era.indexOf(sourceValue);
+          if (index !== -1) {
+            // Replace with target value if not already present
+            if (!person.era.includes(targetValue)) {
+              person.era[index] = targetValue;
+            } else {
+              // Remove duplicate if target already exists
+              person.era.splice(index, 1);
+            }
+            updated = true;
           }
+        } else if (typeof person.era === 'string' && person.era === sourceValue) {
+          person.era = targetValue;
           updated = true;
         }
       }
       
-      if (field === 'country' && person.country && Array.isArray(person.country)) {
-        const index = person.country.indexOf(sourceValue);
-        if (index !== -1) {
-          if (!person.country.includes(targetValue)) {
-            person.country[index] = targetValue;
-          } else {
-            person.country.splice(index, 1);
+      if (field === 'country' && person.country) {
+        if (Array.isArray(person.country)) {
+          const index = person.country.indexOf(sourceValue);
+          if (index !== -1) {
+            if (!person.country.includes(targetValue)) {
+              person.country[index] = targetValue;
+            } else {
+              person.country.splice(index, 1);
+            }
+            updated = true;
           }
+        } else if (typeof person.country === 'string' && person.country === sourceValue) {
+          person.country = targetValue;
           updated = true;
         }
       }
