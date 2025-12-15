@@ -1,10 +1,13 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient } from 'jsr:@supabase/supabase-js@2.49.8';
 import * as kv from './kv_store.tsx';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+// Export createClient for use in login/password routes
+export { createClient };
 
 export async function verifyToken(authHeader: string | null): Promise<string | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

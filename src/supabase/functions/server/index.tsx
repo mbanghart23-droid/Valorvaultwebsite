@@ -2,15 +2,13 @@ import { Hono } from 'npm:hono@4.4.6';
 import { cors } from 'npm:hono/cors';
 import { logger } from 'npm:hono/logger';
 import * as kv from './kv_store.tsx';
-import { createClient } from 'jsr:@supabase/supabase-js@2.49.8';
+import { supabaseAdmin, verifyToken, verifyActiveUser, createClient } from './auth.tsx';
+import { uploadImage, deleteImage, getSignedUrl } from './storage.tsx';
+import { sendEmail, registrationConfirmationEmail, newRegistrationEmail, accountActivatedEmail, passwordResetEmail, passwordResetConfirmationEmail, contactRequestEmail, requestApprovedEmail, requestDeclinedEmail, getAdminEmails } from './email.tsx';
+import { isValidEmail, isValidPassword, getPasswordError, validateProfileData, sanitizeProfileData, validatePersonData, sanitizePersonData, validateContactMessage } from './validation.tsx';
+import { checkRateLimit, RATE_LIMITS, formatResetTime } from './ratelimit.tsx';
 
 const app = new Hono();
-
-// Create Supabase admin client
-const supabaseAdmin = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
 
 // Helper function to get both keys and values by prefix
 async function getByPrefixWithKeys(prefix: string): Promise<Array<{ key: string; value: any }>> {
@@ -216,7 +214,7 @@ app.post("/make-server-8db4ea83/auth/logout", async (c) => {
 app.post("/make-server-8db4ea83/auth/request-password-reset", async (c) => {
   try {
     // Rate limiting
-    const rateLimit = await checkRateLimit(c.req, RATE_LIMITS.PASSWORD_RESET_REQUEST);
+    const rateLimit = await checkRateLimit(c.req.raw, RATE_LIMITS.PASSWORD_RESET_REQUEST);
     if (!rateLimit.allowed) {
       return c.json({ 
         error: `Too many password reset attempts. Please try again in ${formatResetTime(rateLimit.resetAt)}` 
@@ -258,7 +256,7 @@ app.post("/make-server-8db4ea83/auth/request-password-reset", async (c) => {
     // Send password reset email
     await sendEmail({
       to: user.email,
-      subject: 'Reset Your Valor Vault Password',
+      subject: 'Reset Your Valor Registry Password',
       html: passwordResetEmail(user.name, resetToken, expiresAt.toISOString())
     });
     
@@ -278,7 +276,7 @@ app.post("/make-server-8db4ea83/auth/request-password-reset", async (c) => {
 app.post("/make-server-8db4ea83/auth/reset-password", async (c) => {
   try {
     // Rate limiting
-    const rateLimit = await checkRateLimit(c.req, RATE_LIMITS.PASSWORD_RESET_CONFIRM);
+    const rateLimit = await checkRateLimit(c.req.raw, RATE_LIMITS.PASSWORD_RESET_CONFIRM);
     if (!rateLimit.allowed) {
       return c.json({ 
         error: `Too many password reset attempts. Please try again in ${formatResetTime(rateLimit.resetAt)}` 
