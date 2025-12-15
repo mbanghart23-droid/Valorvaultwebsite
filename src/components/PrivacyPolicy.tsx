@@ -36,7 +36,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
               <p className="text-amber-900 text-sm mb-0">
                 <strong>Important Notice:</strong> This is a demonstration mockup created for developer quotes and planning purposes. 
-                This privacy policy represents what would be implemented in a production version of Valor Vault.
+                This privacy policy represents what would be implemented in a production version of Valor Registry.
               </p>
             </div>
 
@@ -47,7 +47,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">1. Introduction</h2>
               <p className="text-neutral-700 mb-4">
-                Valor Vault ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
+                Valor Registry ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
                 explains how we collect, use, disclose, and safeguard your information when you use our Service.
               </p>
               <p className="text-neutral-700 mb-4">
@@ -61,7 +61,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
               
               <h3 className="text-black mb-3 text-lg">Account Information</h3>
               <p className="text-neutral-700 mb-4">
-                When you register for Valor Vault, we collect:
+                When you register for Valor Registry, we collect:
               </p>
               <ul className="text-neutral-700 mb-4 space-y-2">
                 <li>• Name</li>
@@ -201,7 +201,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">8. Children's Privacy</h2>
               <p className="text-neutral-700 mb-4">
-                Valor Vault is not intended for use by individuals under the age of 18. We do not knowingly 
+                Valor Registry is not intended for use by individuals under the age of 18. We do not knowingly 
                 collect personal information from children. If you believe a child has provided us with personal 
                 information, please contact us immediately.
               </p>
@@ -210,7 +210,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">9. International Users</h2>
               <p className="text-neutral-700 mb-4">
-                If you access Valor Vault from outside the United States, please be aware that your information 
+                If you access Valor Registry from outside the United States, please be aware that your information 
                 may be transferred to, stored, and processed in the United States where our servers are located.
               </p>
             </section>
@@ -250,12 +250,12 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
 
             <div className="bg-neutral-100 border border-neutral-200 rounded-lg p-4 mt-8">
               <p className="text-neutral-700 text-sm mb-2">
-                <strong>Important Reminder:</strong> Valor Vault is not designed for storing highly sensitive 
+                <strong>Important Reminder:</strong> Valor Registry is not designed for storing highly sensitive 
                 personal information or PII requiring GDPR, HIPAA, or similar compliance. Please use the platform 
                 responsibly and only for its intended purpose as a military medal collection catalog.
               </p>
               <p className="text-neutral-700 text-sm mb-0">
-                By using Valor Vault, you acknowledge that you have read and understood this Privacy Policy.
+                By using Valor Registry, you acknowledge that you have read and understood this Privacy Policy.
               </p>
             </div>
           </div>

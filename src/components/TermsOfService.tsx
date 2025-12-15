@@ -36,7 +36,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
               <p className="text-amber-900 text-sm mb-0">
                 <strong>Important Notice:</strong> This is a demonstration mockup created for developer quotes and planning purposes. 
-                These terms represent what would be implemented in a production version of Valor Vault.
+                These terms represent what would be implemented in a production version of Valor Registry.
               </p>
             </div>
 
@@ -47,7 +47,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">1. Acceptance of Terms</h2>
               <p className="text-neutral-700 mb-4">
-                By accessing and using Valor Vault ("the Service"), you accept and agree to be bound by the terms 
+                By accessing and using Valor Registry ("the Service"), you accept and agree to be bound by the terms 
                 and provision of this agreement. If you do not agree to these Terms of Service, please do not use the Service.
               </p>
             </section>
@@ -55,7 +55,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">2. Service Description</h2>
               <p className="text-neutral-700 mb-4">
-                Valor Vault is a web-based platform designed to help military medal collectors catalog and document 
+                Valor Registry is a web-based platform designed to help military medal collectors catalog and document 
                 service members and their decorations. The Service allows users to:
               </p>
               <ul className="text-neutral-700 mb-4 space-y-2">
@@ -85,7 +85,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">4. Prohibited Uses and Data Restrictions</h2>
               <p className="text-neutral-700 mb-4">
-                <strong>IMPORTANT:</strong> Valor Vault is NOT designed or intended for:
+                <strong>IMPORTANT:</strong> Valor Registry is NOT designed or intended for:
               </p>
               <ul className="text-neutral-700 mb-4 space-y-2">
                 <li>• Storage of Personally Identifiable Information (PII) beyond basic collector profiles</li>
@@ -103,8 +103,8 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">5. Content and Intellectual Property</h2>
               <p className="text-neutral-700 mb-4">
-                You retain ownership of the content you submit to Valor Vault. By uploading content, you grant 
-                Valor Vault a limited license to store, display, and process your content solely for the purpose 
+                You retain ownership of the content you submit to Valor Registry. By uploading content, you grant 
+                Valor Registry a limited license to store, display, and process your content solely for the purpose 
                 of providing the Service.
               </p>
               <p className="text-neutral-700 mb-4">
@@ -117,11 +117,11 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
               <h2 className="text-black mb-4">6. Disclaimers and Limitations</h2>
               <p className="text-neutral-700 mb-4">
                 <strong>Medal Valuations:</strong> Any estimated values you enter are for your personal record-keeping 
-                only. Valor Vault does not provide professional appraisal services and makes no guarantees about 
+                only. Valor Registry does not provide professional appraisal services and makes no guarantees about 
                 the accuracy of user-provided valuations.
               </p>
               <p className="text-neutral-700 mb-4">
-                <strong>Historical Accuracy:</strong> While we encourage accurate documentation, Valor Vault does 
+                <strong>Historical Accuracy:</strong> While we encourage accurate documentation, Valor Registry does 
                 not verify the historical accuracy of service records or medal entitlements. Users are responsible 
                 for their own research and verification.
               </p>
@@ -159,7 +159,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
             <section className="mb-8">
               <h2 className="text-black mb-4">9. Limitation of Liability</h2>
               <p className="text-neutral-700 mb-4">
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, VALOR VAULT SHALL NOT BE LIABLE FOR ANY INDIRECT, 
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, VALOR REGISTRY SHALL NOT BE LIABLE FOR ANY INDIRECT, 
                 INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, 
                 WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, OR OTHER INTANGIBLE LOSSES.
               </p>
@@ -183,7 +183,7 @@ export function TermsOfService({ onBack, onLogout }: TermsOfServiceProps) {
 
             <div className="bg-neutral-100 border border-neutral-200 rounded-lg p-4 mt-8">
               <p className="text-neutral-700 text-sm mb-0">
-                By creating an account and using Valor Vault, you acknowledge that you have read, understood, 
+                By creating an account and using Valor Registry, you acknowledge that you have read, understood, 
                 and agree to be bound by these Terms of Service and our Privacy Policy.
               </p>
             </div>
