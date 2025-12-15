@@ -6,13 +6,15 @@ import { createClient } from 'jsr:@supabase/supabase-js@2.49.8';
 
 const app = new Hono();
 
+// Create Supabase admin client
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
 // Helper function to get both keys and values by prefix
 async function getByPrefixWithKeys(prefix: string): Promise<Array<{ key: string; value: any }>> {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL'),
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
-  );
-  const { data, error } = await supabase.from('kv_store_8db4ea83').select('key, value').like('key', prefix + '%');
+  const { data, error } = await supabaseAdmin.from('kv_store_8db4ea83').select('key, value').like('key', prefix + '%');
   if (error) {
     throw new Error(error.message);
   }
