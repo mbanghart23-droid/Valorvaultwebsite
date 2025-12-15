@@ -314,9 +314,17 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                         <Upload className="w-4 h-4" />
                         Upload Photo
                       </label>
-                      <p className="text-neutral-500 text-sm mt-2">
-                        Optional. Max 5MB. JPG, PNG, or GIF.
-                      </p>
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-neutral-700 text-sm mb-2">
+                          <strong>Profile Photo Guidelines:</strong>
+                        </p>
+                        <ul className="text-neutral-600 text-sm space-y-1 ml-4">
+                          <li className="list-disc">Accepted formats: JPG, PNG, GIF, WebP</li>
+                          <li className="list-disc">Maximum file size: 5MB</li>
+                          <li className="list-disc">Recommended: Square photos for best display</li>
+                          <li className="list-disc">Optional - can be added later</li>
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -688,21 +696,35 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                   <label className="block text-neutral-700 mb-2">
                     Images
                   </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="imageUpload"
-                    />
-                    <label
-                      htmlFor="imageUpload"
-                      className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors text-sm"
-                    >
-                      <Upload className="w-4 h-4" />
-                      Upload Image
-                    </label>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="imageUpload"
+                      />
+                      <label
+                        htmlFor="imageUpload"
+                        className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors text-sm cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload Image
+                      </label>
+                    </div>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-neutral-700 text-sm mb-2">
+                        <strong>Service Member Image Guidelines:</strong>
+                      </p>
+                      <ul className="text-neutral-600 text-sm space-y-1 ml-4">
+                        <li className="list-disc">Upload photos, documents, or historical records</li>
+                        <li className="list-disc">Accepted formats: JPG, PNG, GIF, WebP</li>
+                        <li className="list-disc">Maximum file size: 5MB per image</li>
+                        <li className="list-disc">Maximum {MAX_IMAGES} images per service member</li>
+                        <li className="list-disc">Images uploaded: {formData.images.length}/{MAX_IMAGES}</li>
+                      </ul>
+                    </div>
                   </div>
                   {formData.images.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
