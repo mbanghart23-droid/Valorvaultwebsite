@@ -1,41 +1,23 @@
-import { Hono } from "npm:hono";
-import { cors } from "npm:hono/cors";
-import { logger } from "npm:hono/logger";
-import * as kv from "./kv_store.tsx";
-import { supabaseAdmin, verifyToken, verifyActiveUser } from "./auth.tsx";
-import { initializeStorage, uploadImage, getSignedUrl, deleteImage } from "./storage.tsx";
-import { 
-  sendEmail, 
-  newRegistrationEmail,
-  registrationConfirmationEmail,
-  accountActivatedEmail,
-  contactRequestEmail,
-  requestApprovedEmail,
-  requestDeclinedEmail,
-  getAdminEmails,
-  passwordResetEmail,
-  passwordResetConfirmationEmail
-} from "./email.tsx";
-import {
-  isValidEmail,
-  isValidPassword,
-  getPasswordError,
-  sanitizeName,
-  sanitizeText,
-  validatePersonData,
-  sanitizePersonData,
-  validateContactMessage,
-  validateProfileData,
-  sanitizeProfileData
-} from "./validation.tsx";
-import {
-  checkRateLimit,
-  checkUserRateLimit,
-  formatResetTime,
-  RATE_LIMITS
-} from "./ratelimit.tsx";
+import { Hono } from 'npm:hono@4.4.6';
+import { cors } from 'npm:hono/cors';
+import { logger } from 'npm:hono/logger';
+import * as kv from './kv_store.tsx';
+import { createClient } from 'jsr:@supabase/supabase-js@2.49.8';
 
 const app = new Hono();
+
+// Helper function to get both keys and values by prefix
+async function getByPrefixWithKeys(prefix: string): Promise<Array<{ key: string; value: any }>> {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL'),
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+  );
+  const { data, error } = await supabase.from('kv_store_8db4ea83').select('key, value').like('key', prefix + '%');
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data ?? [];
+}
 
 // Initialize storage on startup
 initializeStorage();
@@ -1430,15 +1412,20 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
     
     console.log(`[MERGE] Starting merge: "${sourceValue}" → "${targetValue}" in field "${field}"`);
     
-    // Get all persons from all users
-    const allPersons = await kv.getByPrefix('person:');
-    console.log(`[MERGE] Found ${allPersons.length} total person records to check`);
+    // Get all persons from all users (with keys)
+    const allPersonsWithKeys = await getByPrefixWithKeys('person:');
+    console.log(`[MERGE] Found ${allPersonsWithKeys.length} total person records to check`);
     
     let updatedCount = 0;
     let recordsWithSource = 0;
     
     // Update each person's records
-    for (const person of allPersons) {
+    for (const { key, value: person } of allPersonsWithKeys) {
+      // Extract userId from key format: person:{userId}:{personId}
+      const keyParts = key.split(':');
+      const userId = keyParts[1];
+      const personId = keyParts[2];
+      
       let updated = false;
       
       // Handle person-level array fields
@@ -1538,7 +1525,7 @@ app.post("/make-server-8db4ea83/admin/dropdown-merge", async (c) => {
       
       // Save if updated
       if (updated) {
-        await kv.set(`person:${person.ownerId}:${person.id}`, person);
+        await kv.set(`person:${userId}:${personId}`, person);
         updatedCount++;
       }
     }
@@ -1650,11 +1637,5 @@ app.post("/make-server-8db4ea83/admin/dropdown-delete", async (c) => {
     return c.json({ error: 'Failed to delete dropdown value' }, 500);
   }
 });
-
-// Helper to import createClient in Deno environment
-async function createClient(url: string, key: string) {
-  const { createClient: create } = await import('npm:@supabase/supabase-js@2');
-  return create(url, key);
-}
 
 Deno.serve(app.fetch);
