@@ -44,15 +44,15 @@ export interface PersonMedal {
 export interface Person {
   id: string;
   name: string;
-  rank?: string;
+  rank?: string[];
   serviceNumber?: string;
-  branch: string;
-  country: string;
-  era: string;
+  branch?: string;
+  country?: string;
+  era?: string[];
   dateOfBirth?: string;
   dateOfDeath?: string;
   placeOfBirth?: string;
-  unit?: string;
+  unit?: string[];
   biography?: string;
   notes?: string;
   images?: string[];

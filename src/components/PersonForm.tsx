@@ -21,15 +21,15 @@ const existingCategories = ['Combat Decoration', 'Valor Decoration', 'Service Me
 export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
   const [formData, setFormData] = useState({
     name: person?.name || '',
-    rank: person?.rank || '',
+    rank: person?.rank || [] as string[],
     serviceNumber: person?.serviceNumber || '',
     branch: person?.branch || '',
     country: person?.country || '',
-    era: person?.era || '',
+    era: person?.era || [] as string[],
     dateOfBirth: person?.dateOfBirth || '',
     dateOfDeath: person?.dateOfDeath || '',
     placeOfBirth: person?.placeOfBirth || '',
-    unit: person?.unit || '',
+    unit: person?.unit || [] as string[],
     biography: person?.biography || '',
     notes: person?.notes || '',
     images: person?.images || [] as string[],
@@ -49,6 +49,11 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     clasps: []
   });
   const [claspInput, setClaspInput] = useState('');
+  
+  // State for adding new array items
+  const [rankInput, setRankInput] = useState('');
+  const [unitInput, setUnitInput] = useState('');
+  const [eraInput, setEraInput] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -288,18 +293,69 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="rank" className="block text-neutral-700 mb-2">
+                  <label className="block text-neutral-700 mb-2">
                     Rank
                   </label>
-                  <input
-                    id="rank"
-                    name="rank"
-                    type="text"
-                    value={formData.rank}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    placeholder="e.g., Sergeant"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={rankInput}
+                      onChange={(e) => setRankInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (rankInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              rank: [...formData.rank, rankInput.trim()]
+                            });
+                            setRankInput('');
+                          }
+                        }
+                      }}
+                      placeholder="e.g., Sergeant"
+                      className="flex-1 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (rankInput.trim()) {
+                          setFormData({
+                            ...formData,
+                            rank: [...formData.rank, rankInput.trim()]
+                          });
+                          setRankInput('');
+                        }
+                      }}
+                      className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                    >
+                      Add Rank
+                    </button>
+                  </div>
+                  {formData.rank && formData.rank.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.rank.map((rank, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-neutral-100 text-black rounded-full text-sm"
+                        >
+                          {rank}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                rank: formData.rank?.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="ml-1 text-neutral-500 hover:text-black"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -325,7 +381,6 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                     options={existingBranches}
                     label="Branch of Service"
                     placeholder="e.g., Army"
-                    required
                   />
                 </div>
 
@@ -337,35 +392,139 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                     options={existingCountries}
                     label="Country"
                     placeholder="e.g., United States"
-                    required
                   />
                 </div>
 
                 <div>
-                  <ComboBox
-                    name="era"
-                    value={formData.era}
-                    onChange={(value) => setFormData({ ...formData, era: value })}
-                    options={existingEras}
-                    label="Era/Conflict"
-                    placeholder="e.g., World War II"
-                    required
-                  />
+                  <label className="block text-neutral-700 mb-2">
+                    Era/Conflict
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={eraInput}
+                      onChange={(e) => setEraInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (eraInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              era: [...formData.era, eraInput.trim()]
+                            });
+                            setEraInput('');
+                          }
+                        }
+                      }}
+                      placeholder="e.g., World War II"
+                      className="flex-1 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (eraInput.trim()) {
+                          setFormData({
+                            ...formData,
+                            era: [...formData.era, eraInput.trim()]
+                          });
+                          setEraInput('');
+                        }
+                      }}
+                      className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                    >
+                      Add Era
+                    </button>
+                  </div>
+                  {formData.era && formData.era.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.era.map((era, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-neutral-100 text-black rounded-full text-sm"
+                        >
+                          {era}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                era: formData.era?.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="ml-1 text-neutral-500 hover:text-black"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="unit" className="block text-neutral-700 mb-2">
+                  <label className="block text-neutral-700 mb-2">
                     Unit/Division
                   </label>
-                  <input
-                    id="unit"
-                    name="unit"
-                    type="text"
-                    value={formData.unit}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
-                    placeholder="e.g., 29th Infantry Division"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={unitInput}
+                      onChange={(e) => setUnitInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (unitInput.trim()) {
+                            setFormData({
+                              ...formData,
+                              unit: [...formData.unit, unitInput.trim()]
+                            });
+                            setUnitInput('');
+                          }
+                        }
+                      }}
+                      placeholder="e.g., 29th Infantry Division"
+                      className="flex-1 px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (unitInput.trim()) {
+                          setFormData({
+                            ...formData,
+                            unit: [...formData.unit, unitInput.trim()]
+                          });
+                          setUnitInput('');
+                        }
+                      }}
+                      className="px-4 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                    >
+                      Add Unit
+                    </button>
+                  </div>
+                  {formData.unit && formData.unit.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.unit.map((unit, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-neutral-100 text-black rounded-full text-sm"
+                        >
+                          {unit}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                unit: formData.unit?.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="ml-1 text-neutral-500 hover:text-black"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>

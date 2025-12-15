@@ -425,7 +425,17 @@ app.put("/make-server-8db4ea83/profile", async (c) => {
     }
     const sanitizedUpdates = sanitizeProfileData(updates);
     
+    // Update profile fields
     userProfile.profile = { ...userProfile.profile, ...sanitizedUpdates };
+    
+    // Update name and email in the main user record if provided
+    if (sanitizedUpdates.name) {
+      userProfile.name = sanitizedUpdates.name;
+    }
+    if (sanitizedUpdates.email) {
+      userProfile.email = sanitizedUpdates.email;
+    }
+    
     await kv.set(`user:${userId}`, userProfile);
     
     return c.json({ success: true, profile: userProfile.profile });

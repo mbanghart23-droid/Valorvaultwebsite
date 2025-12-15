@@ -29,17 +29,21 @@ export function GlobalPersonCard({ person, onView, onSendContactRequest }: Globa
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="text-black mb-1">{person.name}</h3>
-            {person.rank && (
-              <p className="text-neutral-600 text-sm mb-3">{person.rank}, {person.branch}</p>
+            {person.rank && person.rank.length > 0 && (
+              <p className="text-neutral-600 text-sm mb-3">{person.rank.join(', ')}{person.branch ? `, ${person.branch}` : ''}</p>
             )}
-            <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
-              <MapPin className="w-4 h-4" />
-              <span>{person.country}</span>
-            </div>
-            <div className="flex items-center gap-2 text-neutral-600 text-sm mb-2">
-              <Calendar className="w-4 h-4" />
-              <span>{person.era}</span>
-            </div>
+            {person.country && (
+              <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
+                <MapPin className="w-4 h-4" />
+                <span>{person.country}</span>
+              </div>
+            )}
+            {person.era && person.era.length > 0 && (
+              <div className="flex items-center gap-2 text-neutral-600 text-sm mb-2">
+                <Calendar className="w-4 h-4" />
+                <span>{person.era.join(', ')}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2 text-black text-sm">
               <User className="w-4 h-4" />
               <span>Owner: {person.ownerName}</span>
@@ -47,11 +51,13 @@ export function GlobalPersonCard({ person, onView, onSendContactRequest }: Globa
           </div>
         </div>
 
-        {person.unit && (
-          <div className="mb-4">
-            <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-900 rounded-full text-sm">
-              {person.unit}
-            </span>
+        {person.unit && person.unit.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {person.unit.map((u, i) => (
+              <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-neutral-900 rounded-full text-sm">
+                {u}
+              </span>
+            ))}
           </div>
         )}
 

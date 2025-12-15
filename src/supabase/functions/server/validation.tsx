@@ -202,34 +202,84 @@ export function isValidUrl(url: string): boolean {
 export function validatePersonData(data: any): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  // Required fields
+  // Only name is required
   if (!data.name || !isValidName(data.name)) {
     errors.push('Valid name is required (1-100 characters, letters and basic punctuation only)');
   }
   
-  if (!data.rank || !isValidRank(data.rank)) {
-    errors.push('Valid rank is required');
+  // All other fields are optional
+  if (data.branch && !isValidBranch(data.branch)) {
+    errors.push('Invalid branch of service');
   }
   
-  if (!data.branch || !isValidBranch(data.branch)) {
-    errors.push('Valid branch of service is required');
+  if (data.country && sanitizeText(data.country).length > 100) {
+    errors.push('Country name is too long (max 100 characters)');
   }
   
-  // Optional fields
-  if (data.unit && sanitizeText(data.unit).length > 200) {
-    errors.push('Unit name is too long (max 200 characters)');
+  // Validate rank array if provided
+  if (data.rank) {
+    if (!Array.isArray(data.rank)) {
+      errors.push('Rank must be an array');
+    } else {
+      for (const r of data.rank) {
+        if (typeof r !== 'string' || sanitizeText(r).length > 100) {
+          errors.push('Each rank must be a string and max 100 characters');
+          break;
+        }
+      }
+    }
   }
   
-  if (data.serviceStart && !isValidDate(data.serviceStart)) {
-    errors.push('Invalid service start date format (use YYYY-MM-DD)');
+  // Validate era array if provided
+  if (data.era) {
+    if (!Array.isArray(data.era)) {
+      errors.push('Era must be an array');
+    } else {
+      for (const e of data.era) {
+        if (typeof e !== 'string' || sanitizeText(e).length > 100) {
+          errors.push('Each era must be a string and max 100 characters');
+          break;
+        }
+      }
+    }
   }
   
-  if (data.serviceEnd && !isValidDate(data.serviceEnd)) {
-    errors.push('Invalid service end date format (use YYYY-MM-DD)');
+  // Validate unit array if provided
+  if (data.unit) {
+    if (!Array.isArray(data.unit)) {
+      errors.push('Unit must be an array');
+    } else {
+      for (const u of data.unit) {
+        if (typeof u !== 'string' || sanitizeText(u).length > 200) {
+          errors.push('Each unit must be a string and max 200 characters');
+          break;
+        }
+      }
+    }
   }
   
-  if (data.bio && sanitizeText(data.bio).length > 5000) {
+  if (data.serviceNumber && sanitizeText(data.serviceNumber).length > 100) {
+    errors.push('Service number is too long (max 100 characters)');
+  }
+  
+  if (data.dateOfBirth && !isValidDate(data.dateOfBirth)) {
+    errors.push('Invalid date of birth format (use YYYY-MM-DD)');
+  }
+  
+  if (data.dateOfDeath && !isValidDate(data.dateOfDeath)) {
+    errors.push('Invalid date of death format (use YYYY-MM-DD)');
+  }
+  
+  if (data.placeOfBirth && sanitizeText(data.placeOfBirth).length > 200) {
+    errors.push('Place of birth is too long (max 200 characters)');
+  }
+  
+  if (data.biography && sanitizeText(data.biography).length > 5000) {
     errors.push('Biography is too long (max 5000 characters)');
+  }
+  
+  if (data.notes && sanitizeText(data.notes).length > 2000) {
+    errors.push('Notes are too long (max 2000 characters)');
   }
   
   // Validate images if present
@@ -261,16 +311,41 @@ export function validatePersonData(data: any): { valid: boolean; errors: string[
  * Sanitize person data before saving
  */
 export function sanitizePersonData(data: any): any {
-  return {
+  const sanitized: any = {
     ...data,
     name: sanitizeName(data.name || ''),
-    rank: sanitizeText(data.rank || ''),
-    unit: sanitizeText(data.unit || ''),
-    bio: sanitizeText(data.bio || ''),
-    branch: data.branch, // Already validated against whitelist
-    serviceStart: data.serviceStart || '',
-    serviceEnd: data.serviceEnd || '',
+    serviceNumber: sanitizeText(data.serviceNumber || ''),
+    biography: sanitizeText(data.biography || ''),
+    notes: sanitizeText(data.notes || ''),
+    placeOfBirth: sanitizeText(data.placeOfBirth || ''),
+    branch: data.branch || '',
+    country: sanitizeText(data.country || ''),
+    dateOfBirth: data.dateOfBirth || '',
+    dateOfDeath: data.dateOfDeath || '',
   };
+  
+  // Sanitize rank array
+  if (data.rank && Array.isArray(data.rank)) {
+    sanitized.rank = data.rank.map((r: string) => sanitizeText(r)).filter((r: string) => r.length > 0);
+  } else {
+    sanitized.rank = [];
+  }
+  
+  // Sanitize era array
+  if (data.era && Array.isArray(data.era)) {
+    sanitized.era = data.era.map((e: string) => sanitizeText(e)).filter((e: string) => e.length > 0);
+  } else {
+    sanitized.era = [];
+  }
+  
+  // Sanitize unit array
+  if (data.unit && Array.isArray(data.unit)) {
+    sanitized.unit = data.unit.map((u: string) => sanitizeText(u)).filter((u: string) => u.length > 0);
+  } else {
+    sanitized.unit = [];
+  }
+  
+  return sanitized;
 }
 
 /**
@@ -299,6 +374,16 @@ export function validateContactMessage(message: string): { valid: boolean; error
  */
 export function validateProfileData(data: any): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
+  
+  // Validate name if provided
+  if (data.name && !isValidName(data.name)) {
+    errors.push('Valid name is required (1-100 characters, letters and basic punctuation only)');
+  }
+  
+  // Validate email if provided
+  if (data.email && !isValidEmail(data.email)) {
+    errors.push('Invalid email format');
+  }
   
   if (data.collectorSince && sanitizeText(data.collectorSince).length > 100) {
     errors.push('Collector since field is too long');
@@ -330,11 +415,21 @@ export function validateProfileData(data: any): { valid: boolean; errors: string
  * Sanitize profile data
  */
 export function sanitizeProfileData(data: any): any {
-  return {
+  const sanitized: any = {
     collectorSince: sanitizeText(data.collectorSince || ''),
     location: sanitizeText(data.location || ''),
     bio: sanitizeText(data.bio || ''),
     specialization: sanitizeText(data.specialization || ''),
     isDiscoverable: Boolean(data.isDiscoverable)
   };
+  
+  // Include name and email if provided
+  if (data.name) {
+    sanitized.name = sanitizeName(data.name);
+  }
+  if (data.email) {
+    sanitized.email = data.email.trim().toLowerCase();
+  }
+  
+  return sanitized;
 }

@@ -64,16 +64,20 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                 <div className="flex items-start justify-between">
                   <div>
                     <h1 className="text-white mb-2">{person.name}</h1>
-                    {person.rank && (
-                      <p className="text-white/80 mb-3">{person.rank}, {person.branch}</p>
+                    {person.rank && person.rank.length > 0 && (
+                      <p className="text-white/80 mb-3">{person.rank.join(', ')}{person.branch ? `, ${person.branch}` : ''}</p>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                        {person.country}
-                      </span>
-                      <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
-                        {person.era}
-                      </span>
+                      {person.country && (
+                        <span className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                          {person.country}
+                        </span>
+                      )}
+                      {person.era && person.era.length > 0 && person.era.map((e, i) => (
+                        <span key={i} className="inline-block px-3 py-1 bg-white/20 text-white rounded-full text-sm">
+                          {e}
+                        </span>
+                      ))}
                     </div>
                     {!isOwnPerson && person.ownerName && (
                       <div className="flex items-center gap-2 text-white/90 mt-3">
@@ -165,24 +169,48 @@ export function PersonDetail({ person, onBack, onEdit, onDelete, onContactOwner 
                         <p className="text-black">{person.serviceNumber}</p>
                       </div>
                     )}
-                    {person.unit && (
+                    {person.rank && person.rank.length > 0 && (
                       <div>
-                        <p className="text-neutral-600 text-sm mb-1">Unit</p>
-                        <p className="text-black">{person.unit}</p>
+                        <p className="text-neutral-600 text-sm mb-1">Rank</p>
+                        <p className="text-black">{person.rank.join(', ')}</p>
                       </div>
                     )}
-                    <div>
-                      <p className="text-neutral-600 text-sm mb-1">Branch</p>
-                      <p className="text-black">{person.branch}</p>
-                    </div>
-                    <div>
-                      <p className="text-neutral-600 text-sm mb-1">Country</p>
-                      <p className="text-black">{person.country}</p>
-                    </div>
-                    <div>
-                      <p className="text-neutral-600 text-sm mb-1">Era/Conflict</p>
-                      <p className="text-black">{person.era}</p>
-                    </div>
+                    {person.unit && person.unit.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-neutral-600 text-sm mb-1">Units/Divisions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {person.unit.map((u, i) => (
+                            <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
+                              {u}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {person.branch && (
+                      <div>
+                        <p className="text-neutral-600 text-sm mb-1">Branch</p>
+                        <p className="text-black">{person.branch}</p>
+                      </div>
+                    )}
+                    {person.country && (
+                      <div>
+                        <p className="text-neutral-600 text-sm mb-1">Country</p>
+                        <p className="text-black">{person.country}</p>
+                      </div>
+                    )}
+                    {person.era && person.era.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-neutral-600 text-sm mb-1">Conflicts/Eras</p>
+                        <div className="flex flex-wrap gap-2">
+                          {person.era.map((e, i) => (
+                            <span key={i} className="inline-block px-3 py-1 bg-neutral-100 text-black rounded-full text-sm">
+                              {e}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
