@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import * as kv from './kv_store.tsx';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -25,4 +26,21 @@ export async function verifyToken(authHeader: string | null): Promise<string | n
     console.log('Token verification exception:', error);
     return null;
   }
+}
+
+// Verify token AND check if user is active
+export async function verifyActiveUser(authHeader: string | null): Promise<{ userId: string; userProfile: any } | null> {
+  const userId = await verifyToken(authHeader);
+  
+  if (!userId) {
+    return null;
+  }
+  
+  const userProfile = await kv.get(`user:${userId}`);
+  
+  if (!userProfile || !userProfile.isActive) {
+    return null;
+  }
+  
+  return { userId, userProfile };
 }

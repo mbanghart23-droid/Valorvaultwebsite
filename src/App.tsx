@@ -118,6 +118,13 @@ function AppContent() {
     }
   }, [user, accessToken]);
 
+  // Automatically navigate to dashboard when session is restored
+  useEffect(() => {
+    if (user && !isLoading && currentView === 'landing-page') {
+      setCurrentView('dashboard');
+    }
+  }, [user, isLoading, currentView]);
+
   const loadUserData = async () => {
     if (!accessToken) return;
 

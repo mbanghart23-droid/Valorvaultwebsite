@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
-import { supabaseAdmin, verifyToken } from "./auth.tsx";
+import { supabaseAdmin, verifyToken, verifyActiveUser } from "./auth.tsx";
 import { initializeStorage, uploadImage, getSignedUrl, deleteImage } from "./storage.tsx";
 import { 
   sendEmail, 
@@ -202,19 +202,13 @@ app.post("/make-server-8db4ea83/auth/login", async (c) => {
 // Get current user session
 app.get("/make-server-8db4ea83/auth/session", async (c) => {
   try {
-    const userId = await verifyToken(c.req.header('Authorization'));
+    const result = await verifyActiveUser(c.req.header('Authorization'));
     
-    if (!userId) {
-      return c.json({ error: 'Unauthorized' }, 401);
+    if (!result) {
+      return c.json({ error: 'Unauthorized or account inactive' }, 401);
     }
     
-    const userProfile = await kv.get(`user:${userId}`);
-    
-    if (!userProfile) {
-      return c.json({ error: 'User not found' }, 404);
-    }
-    
-    return c.json({ user: userProfile });
+    return c.json({ user: result.userProfile });
   } catch (error) {
     console.log('Session error:', error);
     return c.json({ error: 'Failed to get session' }, 500);

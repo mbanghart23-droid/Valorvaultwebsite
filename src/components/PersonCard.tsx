@@ -3,17 +3,20 @@ import { Eye, Edit2, Trash2, MapPin, Calendar, Award, CheckCircle, XCircle, User
 
 interface PersonCardProps {
   person: Person;
+  isOwn?: boolean;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function PersonCard({ person, onView, onEdit, onDelete }: PersonCardProps) {
+export function PersonCard({ person, isOwn = true, onView, onEdit, onDelete }: PersonCardProps) {
   const medalsInCollection = person.medals.filter(m => m.inCollection).length;
   const totalMedals = person.medals.length;
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group">
+    <div className={`bg-white border-2 rounded-xl overflow-hidden hover:shadow-lg transition-shadow group ${
+      isOwn ? 'border-black' : 'border-blue-500'
+    }`}>
       <div className="p-6">
         <div className="flex items-start gap-4 mb-4">
           {person.profileImage ? (

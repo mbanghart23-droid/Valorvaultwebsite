@@ -4,6 +4,54 @@ import { Person, UserProfile } from '../App';
 import { PersonCard } from './PersonCard';
 import { GlobalPersonCard } from './GlobalPersonCard';
 
+// Wildcard search matcher function
+function matchesWildcard(text: string, pattern: string): boolean {
+  if (!text || !pattern) return false;
+  
+  // Convert text and pattern to lowercase for case-insensitive matching
+  text = text.toLowerCase();
+  pattern = pattern.toLowerCase();
+  
+  // If no wildcards, do a simple includes check
+  if (!pattern.includes('*')) {
+    return text.includes(pattern);
+  }
+  
+  // Split pattern by * to get segments
+  const segments = pattern.split('*');
+  
+  let position = 0;
+  
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    
+    // Skip empty segments (from consecutive wildcards or leading/trailing wildcards)
+    if (segment === '') continue;
+    
+    // Find the segment in the text starting from current position
+    const index = text.indexOf(segment, position);
+    
+    // If segment not found, no match
+    if (index === -1) return false;
+    
+    // If this is the first segment and there's no leading wildcard, check if it starts at the beginning
+    if (i === 0 && pattern[0] !== '*' && index !== 0) {
+      return false;
+    }
+    
+    // Move position forward
+    position = index + segment.length;
+  }
+  
+  // If pattern ends with a wildcard, we're done
+  if (pattern[pattern.length - 1] === '*') {
+    return true;
+  }
+  
+  // If pattern doesn't end with wildcard, check that we matched to the end
+  return position === text.length;
+}
+
 interface DashboardProps {
   persons: Person[];
   globalPersons: Person[];
@@ -54,14 +102,15 @@ export function Dashboard({
   const [filterCategory, setFilterCategory] = useState('');
   const [filterCollectionStatus, setFilterCollectionStatus] = useState('');
   const [searchGlobal, setSearchGlobal] = useState(false);
+  const [showSearchHelp, setShowSearchHelp] = useState(false);
 
   // Choose which person list to search
   const personsToSearch = searchGlobal ? globalPersons : persons;
 
   // Get unique values for filters
-  const countries = Array.from(new Set(personsToSearch.map(p => p.country))).sort();
-  const eras = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.era) ? p.era : [p.era]))).sort();
-  const branches = Array.from(new Set(personsToSearch.map(p => p.branch))).sort();
+  const countries = Array.from(new Set(personsToSearch.map(p => p.country).filter(Boolean))).sort();
+  const eras = Array.from(new Set(personsToSearch.flatMap(p => Array.isArray(p.era) ? p.era : (p.era ? [p.era] : [])))).sort();
+  const branches = Array.from(new Set(personsToSearch.map(p => p.branch).filter(Boolean))).sort();
   const categories = Array.from(new Set(personsToSearch.flatMap(p => p.medals.map(m => m.category)))).sort();
   const collectionStatuses = ['In Collection', 'Not in Collection'];
 
@@ -69,22 +118,22 @@ export function Dashboard({
   const filteredPersons = personsToSearch.filter(person => {
     // Check if search matches person fields OR any medal fields
     const matchesPersonFields = searchQuery === '' || 
-      person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (Array.isArray(person.era) && person.era.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-      (Array.isArray(person.rank) && person.rank.some(r => r.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-      (person.serviceNumber && person.serviceNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (Array.isArray(person.unit) && person.unit.some(u => u.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-      (person.biography && person.biography.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (person.ownerName && person.ownerName.toLowerCase().includes(searchQuery.toLowerCase()));
+      matchesWildcard(person.name, searchQuery) ||
+      (person.country && matchesWildcard(person.country, searchQuery)) ||
+      (person.branch && matchesWildcard(person.branch, searchQuery)) ||
+      (Array.isArray(person.era) && person.era.some(e => matchesWildcard(e, searchQuery))) ||
+      (Array.isArray(person.rank) && person.rank.some(r => matchesWildcard(r, searchQuery))) ||
+      (person.serviceNumber && matchesWildcard(person.serviceNumber, searchQuery)) ||
+      (Array.isArray(person.unit) && person.unit.some(u => matchesWildcard(u, searchQuery))) ||
+      (person.biography && matchesWildcard(person.biography, searchQuery)) ||
+      (person.ownerName && matchesWildcard(person.ownerName, searchQuery));
     
     // Check if search matches any medal fields
     const matchesMedalFields = searchQuery === '' || person.medals.some(medal =>
-      medal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      medal.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (medal.description && medal.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (medal.clasps && medal.clasps.some(clasp => clasp.toLowerCase().includes(searchQuery.toLowerCase())))
+      matchesWildcard(medal.name, searchQuery) ||
+      matchesWildcard(medal.category, searchQuery) ||
+      (medal.description && matchesWildcard(medal.description, searchQuery)) ||
+      (medal.clasps && medal.clasps.some(clasp => matchesWildcard(clasp, searchQuery)))
     );
 
     const matchesSearch = matchesPersonFields || matchesMedalFields;
@@ -97,6 +146,15 @@ export function Dashboard({
 
     return matchesSearch && matchesCountry && matchesEra && matchesBranch && matchesCategory && matchesCollectionStatus;
   });
+
+  // Split filtered persons into own collection and others (only when searching globally)
+  const ownCollectionResults = searchGlobal 
+    ? filteredPersons.filter(p => p.ownerId === currentUserId)
+    : filteredPersons;
+  
+  const othersCollectionResults = searchGlobal 
+    ? filteredPersons.filter(p => p.ownerId !== currentUserId)
+    : [];
 
   // Calculate total medals in collection
   const totalMedals = persons.reduce((sum, p) => sum + p.medals.length, 0);
@@ -183,6 +241,46 @@ export function Dashboard({
               <Plus className="w-5 h-5" />
               Add Service Member
             </button>
+          </div>
+
+          {/* Search Help */}
+          <div className="mb-4">
+            <button
+              onClick={() => setShowSearchHelp(!showSearchHelp)}
+              className="flex items-center gap-2 text-neutral-600 hover:text-black transition-colors text-sm"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>Search Tips</span>
+            </button>
+            {showSearchHelp && (
+              <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="text-black mb-2">Search with Wildcards</h4>
+                <p className="text-neutral-700 text-sm mb-3">
+                  Use the asterisk (*) as a wildcard to match any characters:
+                </p>
+                <ul className="space-y-2 text-sm text-neutral-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 shrink-0">•</span>
+                    <span><code className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">john*</code> - Finds anything starting with "john" (Johnson, John Smith, etc.)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 shrink-0">•</span>
+                    <span><code className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">*medal</code> - Finds anything ending with "medal" (Victory Medal, War Medal, etc.)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 shrink-0">•</span>
+                    <span><code className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">*war*</code> - Finds anything containing "war" (World War I, Warfare Badge, etc.)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 shrink-0">•</span>
+                    <span><code className="px-1.5 py-0.5 bg-white border border-neutral-300 rounded text-xs">d*y</code> - Finds words starting with "d" and ending with "y" (duty,day, etc.)</span>
+                  </li>
+                </ul>
+                <p className="text-neutral-600 text-xs mt-3 italic">
+                  Without wildcards, search will find matches anywhere in the text (partial matching).
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Global Search Checkbox */}
@@ -318,32 +416,55 @@ export function Dashboard({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPersons.map(person => {
-              const isOwnPerson = person.ownerId === currentUserId;
-              
-              if (searchGlobal && !isOwnPerson) {
-                return (
-                  <GlobalPersonCard
-                    key={person.id}
-                    person={person}
-                    onView={() => onViewPerson(person.id)}
-                    onSendContactRequest={onSendContactRequest}
-                  />
-                );
-              }
-              
-              return (
-                <PersonCard
-                  key={person.id}
-                  person={person}
-                  onView={() => onViewPerson(person.id)}
-                  onEdit={() => onEditPerson(person.id)}
-                  onDelete={() => onDeletePerson(person.id)}
-                />
-              );
-            })}
-          </div>
+          <>
+            {/* Your Collection Section */}
+            {ownCollectionResults.length > 0 && (
+              <div className="mb-8">
+                {searchGlobal && (
+                  <div className="mb-4 flex items-center gap-3">
+                    <h2 className="text-black text-xl">Your Collection</h2>
+                    <span className="px-3 py-1 bg-black text-white rounded-full text-sm">
+                      {ownCollectionResults.length}
+                    </span>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {ownCollectionResults.map(person => (
+                    <PersonCard
+                      key={person.id}
+                      person={person}
+                      isOwn={true}
+                      onView={() => onViewPerson(person.id)}
+                      onEdit={() => onEditPerson(person.id)}
+                      onDelete={() => onDeletePerson(person.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Other Collections Section */}
+            {searchGlobal && othersCollectionResults.length > 0 && (
+              <div>
+                <div className="mb-4 flex items-center gap-3">
+                  <h2 className="text-black text-xl">Other Collections</h2>
+                  <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm">
+                    {othersCollectionResults.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {othersCollectionResults.map(person => (
+                    <GlobalPersonCard
+                      key={person.id}
+                      person={person}
+                      onView={() => onViewPerson(person.id)}
+                      onSendContactRequest={onSendContactRequest}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
 
