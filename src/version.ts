@@ -4,7 +4,7 @@
  */
 
 export const VERSION = {
-  number: '1.1.1',
+  number: '1.2.0',
   name: 'Foundation',
   releaseDate: '2024-12-15',
   buildDate: new Date().toISOString().split('T')[0]
