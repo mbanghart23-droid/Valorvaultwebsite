@@ -87,27 +87,19 @@ export function isValidImageType(mimeType: string): boolean {
     'image/jpg',
     'image/png',
     'image/webp',
-    'image/gif'
+    'image/gif',
+    'image/tiff',
+    'image/tif'
   ];
   
   return allowedTypes.includes(mimeType.toLowerCase());
 }
 
 /**
- * Validate image data URL
+ * Validate image data URL format
  */
 export function isValidImageDataUrl(dataUrl: string): boolean {
-  if (!dataUrl || typeof dataUrl !== 'string') return false;
-  
-  // Check if it starts with data:image/
-  if (!dataUrl.startsWith('data:image/')) return false;
-  
-  // Extract mime type
-  const match = dataUrl.match(/^data:(image\/[a-z]+);base64,/);
-  if (!match) return false;
-  
-  const mimeType = match[1];
-  return isValidImageType(mimeType);
+  return /^data:image\/(jpeg|jpg|png|gif|webp|tiff|tif);base64,/.test(dataUrl);
 }
 
 /**
@@ -129,9 +121,9 @@ export function getBase64ImageSize(dataUrl: string): number {
 }
 
 /**
- * Validate image size (max 5MB)
+ * Validate image size (max 26MB by default)
  */
-export function isValidImageSize(dataUrl: string, maxSizeInMB: number = 5): boolean {
+export function isValidImageSize(dataUrl: string, maxSizeInMB: number = 26): boolean {
   const sizeInBytes = getBase64ImageSize(dataUrl);
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
   
@@ -294,19 +286,25 @@ export function validatePersonData(data: any): { valid: boolean; errors: string[
   
   // Validate images if present
   if (data.images && Array.isArray(data.images)) {
-    if (data.images.length > 10) {
-      errors.push('Maximum 10 images allowed per person');
+    if (data.images.length > 5) {
+      errors.push('Maximum 5 images allowed per person');
     }
     
     for (let i = 0; i < data.images.length; i++) {
       const img = data.images[i];
       
-      if (!isValidImageDataUrl(img)) {
-        errors.push(`Image ${i + 1} has invalid format (must be JPG, PNG, WebP, or GIF)`);
+      // Skip validation for already-uploaded images (URLs)
+      // Only validate new uploads (base64 data URLs)
+      if (!img.startsWith('data:')) {
+        continue;
       }
       
-      if (!isValidImageSize(img, 5)) {
-        errors.push(`Image ${i + 1} is too large (max 5MB per image)`);
+      if (!isValidImageDataUrl(img)) {
+        errors.push(`Image ${i + 1} has invalid format (must be JPG, PNG, WebP, GIF, or TIF)`);
+      }
+      
+      if (!isValidImageSize(img, 26)) {
+        errors.push(`Image ${i + 1} is too large (max 26MB per image)`);
       }
     }
   }

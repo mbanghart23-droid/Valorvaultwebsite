@@ -9,10 +9,10 @@ export async function initializeStorage() {
     const bucketExists = buckets?.some(bucket => bucket.name === BUCKET_NAME);
     
     if (!bucketExists) {
-      const { error } = await supabaseAdmin.storage.createBucket(BUCKET_NAME, {
+      const { error} = await supabaseAdmin.storage.createBucket(BUCKET_NAME, {
         public: false,
-        fileSizeLimit: 5242880, // 5MB
-        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+        fileSizeLimit: 27262976, // 26MB
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/tiff', 'image/tif']
       });
       
       if (error) {
@@ -108,5 +108,27 @@ export async function deleteImage(filePath: string): Promise<boolean> {
   } catch (error) {
     console.error('Error in deleteImage:', error);
     return false;
+  }
+}
+
+/**
+ * Extract file path from a signed URL
+ * Signed URLs look like: https://project.supabase.co/storage/v1/object/sign/bucket-name/path/to/file.jpg?token=...
+ */
+export function extractFilePathFromUrl(signedUrl: string, bucketName: string = BUCKET_NAME): string | null {
+  try {
+    const url = new URL(signedUrl);
+    const pathname = url.pathname;
+    
+    // Remove /storage/v1/object/sign/bucket-name/ prefix
+    const prefix = `/storage/v1/object/sign/${bucketName}/`;
+    if (pathname.startsWith(prefix)) {
+      return pathname.substring(prefix.length);
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting file path from URL:', error);
+    return null;
   }
 }

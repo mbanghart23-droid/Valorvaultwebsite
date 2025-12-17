@@ -78,7 +78,7 @@ export function PrivacyPolicy({ onBack, onLogout }: PrivacyPolicyProps) {
                 <li>• Service member records (names, ranks, service numbers, biographical information)</li>
                 <li>• Medal information (names, categories, dates, descriptions)</li>
                 <li>• Collection details (condition, acquisition information, estimated values)</li>
-                <li>• Images you upload (limited to 2 per record, max 5MB each)</li>
+                <li>• Images you upload (limited to 5 per record, max 26MB each, formats: JPG, PNG, WebP, GIF, TIF)</li>
                 <li>• Notes and descriptions</li>
               </ul>
 

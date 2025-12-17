@@ -10,8 +10,8 @@ interface PersonFormProps {
   onCancel: () => void;
 }
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_IMAGES = 2;
+const MAX_IMAGE_SIZE = 26 * 1024 * 1024; // 26MB
+const MAX_IMAGES = 5;
 
 // Mock existing values for autocomplete (in production, these would come from database)
 const existingBranches = ['Army', 'Navy', 'Air Force', 'Marines', 'Coast Guard', 'U.S. Army', 'USAF'];
@@ -69,30 +69,30 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const file = files[0];
+    for (const file of files) {
+      // Check file size
+      if (file.size > MAX_IMAGE_SIZE) {
+        alert(`Image size must be less than ${MAX_IMAGE_SIZE / 1024 / 1024}MB`);
+        return;
+      }
 
-    // Check file size
-    if (file.size > MAX_IMAGE_SIZE) {
-      alert(`Image size must be less than ${MAX_IMAGE_SIZE / 1024 / 1024}MB`);
-      return;
+      // Check max images
+      if (formData.images.length >= MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed`);
+        return;
+      }
+
+      // Convert to base64 for mockup purposes
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setFormData({
+          ...formData,
+          images: [...formData.images, base64String]
+        });
+      };
+      reader.readAsDataURL(file);
     }
-
-    // Check max images
-    if (formData.images.length >= MAX_IMAGES) {
-      alert(`Maximum ${MAX_IMAGES} images allowed`);
-      return;
-    }
-
-    // Convert to base64 for mockup purposes
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setFormData({
-        ...formData,
-        images: [...formData.images, base64String]
-      });
-    };
-    reader.readAsDataURL(file);
 
     // Reset input
     e.target.value = '';
@@ -700,10 +700,11 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                     <div className="flex items-center gap-4">
                       <input
                         type="file"
-                        accept="image/*"
+                        id="images"
+                        multiple
+                        accept="image/*,.tif,.tiff"
                         onChange={handleImageUpload}
-                        className="hidden"
-                        id="imageUpload"
+                        className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                       />
                       <label
                         htmlFor="imageUpload"
@@ -719,8 +720,8 @@ export function PersonForm({ person, onSubmit, onCancel }: PersonFormProps) {
                       </p>
                       <ul className="text-neutral-600 text-sm space-y-1 ml-4">
                         <li className="list-disc">Upload photos, documents, or historical records</li>
-                        <li className="list-disc">Accepted formats: JPG, PNG, GIF, WebP</li>
-                        <li className="list-disc">Maximum file size: 5MB per image</li>
+                        <li className="list-disc">Accepted formats: JPG, PNG, GIF, WebP, TIFF</li>
+                        <li className="list-disc">Maximum file size: 26MB per image</li>
                         <li className="list-disc">Maximum {MAX_IMAGES} images per service member</li>
                         <li className="list-disc">Images uploaded: {formData.images.length}/{MAX_IMAGES}</li>
                       </ul>

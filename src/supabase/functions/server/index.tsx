@@ -3,7 +3,7 @@ import { cors } from 'npm:hono/cors';
 import { logger } from 'npm:hono/logger';
 import * as kv from './kv_store.tsx';
 import { supabaseAdmin, verifyToken, verifyActiveUser, createClient } from './auth.tsx';
-import { uploadImage, deleteImage, getSignedUrl } from './storage.tsx';
+import { uploadImage, deleteImage, getSignedUrl, extractFilePathFromUrl } from './storage.tsx';
 import { sendEmail, registrationConfirmationEmail, newRegistrationEmail, accountActivatedEmail, passwordResetEmail, passwordResetConfirmationEmail, contactRequestEmail, requestApprovedEmail, requestDeclinedEmail, getAdminEmails, contactSupportEmail } from './email.tsx';
 import { isValidEmail, isValidPassword, getPasswordError, validateProfileData, sanitizeProfileData, validatePersonData, sanitizePersonData, validateContactMessage } from './validation.tsx';
 import { checkRateLimit, RATE_LIMITS, formatResetTime } from './ratelimit.tsx';
@@ -709,6 +709,24 @@ app.post("/make-server-8db4ea83/persons", async (c) => {
     
     await kv.set(`person:${userId}:${personId}`, person);
     
+    // Get signed URLs for response
+    if (person.profileImageFile) {
+      const signedUrl = await getSignedUrl(person.profileImageFile);
+      if (signedUrl) {
+        person.profileImage = signedUrl;
+      }
+    }
+    
+    if (person.imageFiles && person.imageFiles.length > 0) {
+      person.images = [];
+      for (const filePath of person.imageFiles) {
+        const signedUrl = await getSignedUrl(filePath);
+        if (signedUrl) {
+          person.images.push(signedUrl);
+        }
+      }
+    }
+    
     return c.json({ success: true, person });
   } catch (error) {
     console.log('Create person error:', error);
@@ -735,39 +753,69 @@ app.put("/make-server-8db4ea83/persons/:id", async (c) => {
     
     // Handle profile image update
     let profileImageFile = existingPerson.profileImageFile || '';
-    if (updates.profileImage && updates.profileImage.startsWith('data:')) {
-      // Delete old profile image
-      if (profileImageFile) {
-        await deleteImage(profileImageFile);
-      }
-      // Upload new profile image
-      const fileName = `person-${personId}-profile.jpg`;
-      const filePath = await uploadImage(userId, updates.profileImage, fileName);
-      if (filePath) {
-        profileImageFile = filePath;
+    if (updates.profileImage) {
+      if (updates.profileImage.startsWith('data:')) {
+        // New upload - delete old and upload new
+        if (profileImageFile) {
+          await deleteImage(profileImageFile);
+        }
+        const fileName = `person-${personId}-profile-${Date.now()}.jpg`;
+        const filePath = await uploadImage(userId, updates.profileImage, fileName);
+        if (filePath) {
+          profileImageFile = filePath;
+        }
+      } else if (updates.profileImage.startsWith('http')) {
+        // Existing URL - extract file path and verify it matches
+        const filePath = extractFilePathFromUrl(updates.profileImage);
+        if (filePath && filePath === profileImageFile) {
+          // URL matches current file, keep it
+          // profileImageFile stays unchanged
+        } else {
+          console.log('Warning: profileImage URL mismatch - keeping existing file');
+        }
+      } else if (updates.profileImage === '') {
+        // Empty string means user removed the profile image
+        if (profileImageFile) {
+          await deleteImage(profileImageFile);
+          profileImageFile = '';
+        }
       }
     }
     
     // Handle new image uploads
     let imageFiles = existingPerson.imageFiles || [];
-    if (updates.images && updates.images.length > 0) {
-      // Delete old images
-      for (const filePath of imageFiles) {
-        await deleteImage(filePath);
-      }
+    if (updates.images !== undefined) {
+      const newImageFiles: string[] = [];
       
-      // Upload new images
-      imageFiles = [];
+      // Process each image
       for (let i = 0; i < updates.images.length; i++) {
         const imageData = updates.images[i];
+        
+        // If it's a new upload (base64), upload it
         if (imageData.startsWith('data:')) {
-          const fileName = `person-${personId}-${i}.jpg`;
+          const fileName = `person-${personId}-${Date.now()}-${i}.jpg`;
           const filePath = await uploadImage(userId, imageData, fileName);
           if (filePath) {
-            imageFiles.push(filePath);
+            newImageFiles.push(filePath);
+          }
+        } else if (imageData.startsWith('http')) {
+          // It's an existing URL - extract file path from URL
+          const filePath = extractFilePathFromUrl(imageData);
+          if (filePath && imageFiles.includes(filePath)) {
+            // This file path exists in our current list, keep it
+            newImageFiles.push(filePath);
           }
         }
       }
+      
+      // Delete images that are no longer in the list
+      for (const oldFilePath of imageFiles) {
+        if (!newImageFiles.includes(oldFilePath)) {
+          await deleteImage(oldFilePath);
+        }
+      }
+      
+      imageFiles = newImageFiles;
     }
     
     // Validate and sanitize person data
@@ -790,6 +838,24 @@ app.put("/make-server-8db4ea83/persons/:id", async (c) => {
     };
     
     await kv.set(`person:${userId}:${personId}`, person);
+    
+    // Get signed URLs for response
+    if (person.profileImageFile) {
+      const signedUrl = await getSignedUrl(person.profileImageFile);
+      if (signedUrl) {
+        person.profileImage = signedUrl;
+      }
+    }
+    
+    if (person.imageFiles && person.imageFiles.length > 0) {
+      person.images = [];
+      for (const filePath of person.imageFiles) {
+        const signedUrl = await getSignedUrl(filePath);
+        if (signedUrl) {
+          person.images.push(signedUrl);
+        }
+      }
+    }
     
     return c.json({ success: true, person });
   } catch (error) {
